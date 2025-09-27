@@ -19,9 +19,9 @@
    });
 
  */
-static void runWithinPluginEditor (const std::function<void (AA50AudioProcessor& plugin)>& testCode)
+static void runWithinPluginEditor (const std::function<void (LZ25AudioProcessor& plugin)>& testCode)
 {
-    AA50AudioProcessor plugin;
+    LZ25AudioProcessor plugin;
     auto gui = juce::ScopedJuceInitialiser_GUI {};
     auto editor = plugin.createEditorIfNeeded();
 
