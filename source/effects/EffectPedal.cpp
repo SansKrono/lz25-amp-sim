@@ -242,6 +242,29 @@ void EffectPedalComponent::setupComponents()
         label->setFont(juce::FontOptions(10.0f, juce::Font::bold));
         addAndMakeVisible(*label);
         
+        // If this is the Pitch pedal's RANGE parameter, add a second label above
+        if (param.id == "PITCH_RANGE")
+        {
+            pitchRangeKnobIndex = (int) parameterSliders.size(); // index before pushing this slider
+            pitchRangeModeLabel = std::make_unique<juce::Label>();
+            pitchRangeModeLabel->setJustificationType(juce::Justification::centred);
+            pitchRangeModeLabel->setColour(juce::Label::textColourId, juce::Colours::white);
+            pitchRangeModeLabel->setFont(juce::FontOptions(10.0f, juce::Font::plain));
+            addAndMakeVisible(*pitchRangeModeLabel);
+
+            // Update function bound to this slider's value
+            auto updateRangeText = [this, s = slider.get()]()
+            {
+                if (pitchRangeModeLabel)
+                {
+                    int idx = juce::roundToInt((float) s->getValue());
+                    pitchRangeModeLabel->setText(rangeIndexToText(idx), juce::dontSendNotification);
+                }
+            };
+            slider->onValueChange = updateRangeText;
+            updateRangeText();
+        }
+        
         // Create parameter attachment
         auto attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             apvts, param.id, *slider);
@@ -378,6 +401,13 @@ void EffectPedalComponent::resized()
             if (idx >= totalKnobs) break;
             juce::Rectangle<int> knobBounds(x, y, knobSize, knobSize);
             parameterSliders[idx]->setBounds(knobBounds);
+
+            // Secondary label for PITCH_RANGE goes above the knob
+            if (pitchRangeModeLabel && idx == pitchRangeKnobIndex)
+            {
+                juce::Rectangle<int> upperLabelBounds(x, juce::jmax(knobArea.getY(), y - (labelH + 2)), knobSize, labelH);
+                pitchRangeModeLabel->setBounds(upperLabelBounds);
+            }
 
             juce::Rectangle<int> labelBounds(x, y + knobSize + 2, knobSize, labelH);
             parameterLabels[idx]->setBounds(labelBounds);

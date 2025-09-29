@@ -15,6 +15,8 @@
 #include "effects/TubeScreamer808.h"
 #include "effects/BigCheeseFuzz.h"
 #include "effects/SmartGate.h"
+#include "effects/Pitch.h"
+#include "effects/TransientShaper.h"
 
 //==============================================================================
 /**
@@ -79,6 +81,7 @@ public:
     // void bottomEnd();
 
     float getRMSOutputValue(const int channel) const;
+    float getRMSInputValue(const int channel) const;
 
     juce::AudioProcessorValueTreeState apvts;
     juce::ValueTree valueTree;
@@ -108,6 +111,11 @@ public:
     bool nextIR();
     bool prevIR();
     juce::String getCurrentIRName() const { return savedFile.getFileName(); }
+
+    // Preset management API (shared across Standalone and plugin formats)
+    bool savePreset (const juce::File& fileToSave) const;
+    bool loadPreset (const juce::File& fileToLoad);
+    static juce::File getDefaultPresetDirectory();
 
 private:
     // **MODERN METAL ADJUSTMENT: ADD NEW INDEX FOR PRE-DISTORTION HPF**
@@ -144,14 +152,17 @@ private:
 
     juce::dsp::ProcessSpec _spec{};
     juce::LinearSmoothedValue<float> _rmsOutput;
+    juce::LinearSmoothedValue<float> _rmsInput;
 
     // **NEW FUNCTION DECLARATION**
     void updateProcessorChain();
 
     //==============================================================================
     // Pre-FX Effects
+    std::unique_ptr<Pitch> pitch;
     std::unique_ptr<SmartGate> smartGate;
     std::unique_ptr<MxrDynaComp> compressor;
+    std::unique_ptr<TransientShaper> transientShaper;
     std::unique_ptr<TubeScreamer808> tubeScreamer;
     std::unique_ptr<BigCheeseFuzz> bigCheese;
 

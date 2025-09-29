@@ -15,6 +15,11 @@ public:
 private:
     void setSliderProperties(juce::Slider* sliderToSet);
 
+    // Background amp faceplate image and computed areas
+    juce::Image _ampFaceImage;
+    juce::Rectangle<int> _ampImageArea; // scaled image area within component
+    juce::Rectangle<int> _knobArea;     // lower half area where knobs are placed
+
     // Input stage sliders
     juce::Slider _sliderInput;
     juce::Label _labelInput;

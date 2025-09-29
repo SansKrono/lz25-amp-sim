@@ -1,48 +1,48 @@
-#include "PreFXPanel.h"
+#include "PitchDynamicsPanel.h"
 
-PreFXPanel::PreFXPanel(juce::AudioProcessorValueTreeState& apvts)
+PitchDynamicsPanel::PitchDynamicsPanel(juce::AudioProcessorValueTreeState& apvts)
     : apvts(apvts)
 {
-    // Create effect instances for GUI (Pre-Amp drives)
-    tubeScreamer = std::make_unique<TubeScreamer808>();
-    bigCheese = std::make_unique<BigCheeseFuzz>();
-    
+    // Create effect instances for GUI
+    pitch = std::make_unique<Pitch>();
+    smartGate = std::make_unique<SmartGate>();
+    transientShaper = std::make_unique<TransientShaper>();
+    compressor = std::make_unique<MxrDynaComp>();
+
     // Create pedal components
-    tubeScreamerComponent = std::make_unique<EffectPedalComponent>(*tubeScreamer, apvts);
-    bigCheeseComponent = std::make_unique<EffectPedalComponent>(*bigCheese, apvts);
-    
-    // Add and make visible
-    addAndMakeVisible(*tubeScreamerComponent);
-    addAndMakeVisible(*bigCheeseComponent);
+    pitchComponent = std::make_unique<EffectPedalComponent>(*pitch, apvts);
+    smartGateComponent = std::make_unique<EffectPedalComponent>(*smartGate, apvts);
+    transientShaperComponent = std::make_unique<EffectPedalComponent>(*transientShaper, apvts);
+    compressorComponent = std::make_unique<EffectPedalComponent>(*compressor, apvts);
+
+    // Add and make visible in processing order
+    addAndMakeVisible(*pitchComponent);
+    addAndMakeVisible(*smartGateComponent);
+    addAndMakeVisible(*transientShaperComponent);
+    addAndMakeVisible(*compressorComponent);
 }
 
-PreFXPanel::~PreFXPanel() = default;
+PitchDynamicsPanel::~PitchDynamicsPanel() = default;
 
-void PreFXPanel::paint(juce::Graphics& g)
+void PitchDynamicsPanel::paint(juce::Graphics& g)
 {
     // Transparent background to inherit parent's styling
     g.fillAll(juce::Colours::transparentBlack);
-    
-    // Draw section title
-    g.setColour(juce::Colour::fromRGB(45, 55, 70));
-    g.setFont(juce::FontOptions("Arial", 16.0f, juce::Font::bold));
-    
-    auto bounds = getLocalBounds();
-    auto titleArea = bounds.removeFromTop(30);
 }
 
-void PreFXPanel::resized()
+void PitchDynamicsPanel::resized()
 {
     auto bounds = getLocalBounds();
 
-    // Reserve space for title/header
+    // Reserve space for title/header (consistency with PreFXPanel)
     bounds.removeFromTop(35);
 
-    // Collect visible pedals in order
     struct PedalEntry { EffectPedal* pedal; EffectPedalComponent* comp; };
     std::vector<PedalEntry> pedals = {
-        { tubeScreamer.get(),   tubeScreamerComponent.get() },
-        { bigCheese.get(),      bigCheeseComponent.get() }
+        { pitch.get(),          pitchComponent.get() },
+        { smartGate.get(),      smartGateComponent.get() },
+        { transientShaper.get(),transientShaperComponent.get() },
+        { compressor.get(),     compressorComponent.get() }
     };
 
     // Base (unscaled) realistic sizes for each pedal
@@ -52,7 +52,7 @@ void PreFXPanel::resized()
     int maxBaseH = 0;
     for (auto& p : pedals)
     {
-        auto s = p.pedal->getRealisticSize(1.0f); // use scale 1.0 as base
+        auto s = p.pedal->getRealisticSize(1.0f);
         baseSizes.push_back(s);
         sumBaseW += s.getWidth();
         maxBaseH = std::max(maxBaseH, s.getHeight());
@@ -62,8 +62,7 @@ void PreFXPanel::resized()
     const int availableW = bounds.getWidth();
     const int availableH = bounds.getHeight();
 
-    // Compute global scale limited by height and width
-    const int minGap = 16; // desired minimum spacing including edges
+    const int minGap = 16;
 
     float scaleH = maxBaseH > 0 ? (float) availableH / (float) maxBaseH : 1.0f;
     float scaleW = 1.0f;
@@ -74,19 +73,15 @@ void PreFXPanel::resized()
         scaleW = (float) juce::jmax(0, availableW - minGapsWidth) / (float) sumBaseW;
     }
 
-    // Constrain scale to a sensible range
     float scale = juce::jlimit(0.4f, 2.5f, std::min(scaleH, scaleW));
 
-    // With the chosen scale, recompute spacing to evenly distribute
     const int usedW = (int) std::round(scale * (float) sumBaseW);
     const int totalGaps = n + 1;
     const int leftover = juce::jmax(0, availableW - usedW);
     int spacing = leftover / totalGaps;
-    int extra = leftover % totalGaps; // distribute remainder to leftmost gaps
+    int extra = leftover % totalGaps;
 
     int x = bounds.getX();
-
-    // Position each pedal, vertically centered
     for (int i = 0; i < n; ++i)
     {
         int thisGap = spacing + (i < extra ? 1 : 0);

@@ -216,10 +216,35 @@ private:
     std::vector<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>> sliderAttachments;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> enableAttachment;
 
+    // Extra UI for Pitch Range knob (shows interval text above the knob)
+    int pitchRangeKnobIndex = -1;
+    std::unique_ptr<juce::Label> pitchRangeModeLabel; // visible only for Pitch pedal
+
     //==============================================================================
     void setupComponents();
     void drawPedalBackground(juce::Graphics& g, const juce::Rectangle<int>& bounds);
     
+    // Mapping helper for PITCH_RANGE -> human-readable text
+    static juce::String rangeIndexToText(int index)
+    {
+        switch (index)
+        {
+            case 0:  return "Dive Bomb";
+            case 1:  return "2 Oct Down";
+            case 2:  return "Octave Down";
+            case 3:  return "5th Down";
+            case 4:  return "4th Down";
+            case 5:  return "2nd Down";
+            case 6:  return "Off";
+            case 7:  return "2nd Up";
+            case 8:  return "4th Up";
+            case 9:  return "5th Up";
+            case 10: return "Octave Up";
+            case 11: return "2 Oct Up";
+            default: return {};
+        }
+    }
+
     // Custom look and feel for circular button
     CircularButtonLookAndFeel circularButtonLookAndFeel;
     PedalKnobLookAndFeel pedalKnobLookAndFeel;

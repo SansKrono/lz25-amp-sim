@@ -2,6 +2,8 @@
 
 #include "EffectPedal.h"
 #include <juce_dsp/juce_dsp.h>
+#include <memory>
+#include "../../modules/TS-808-Ultra/Source/dsp/ClippingStage.h"
 
 //==============================================================================
 /**
@@ -46,6 +48,9 @@ private:
         // Lightweight noise gate state
         float noiseEnv = 0.0f;   // input envelope follower
         float gateGain = 1.0f;   // smoothed gate gain (0=closed, 1=open)
+
+        // TS-808-Ultra clipping stage (per-channel)
+        std::unique_ptr<ClippingStage> clipper;
     };
 
     std::vector<CircuitState> channelStates;

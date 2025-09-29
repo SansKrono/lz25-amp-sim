@@ -49,9 +49,8 @@ add_subdirectory(JUCE)
 
 # Add any other modules you want modules here, before the juce_add_plugin call
 # juce_add_module(modules/my_module)
-
 # This adds the melatonin inspector module
-#add_subdirectory (modules/melatonin_inspector)
+add_subdirectory (modules/melatonin_inspector)
 
 # See `docs/CMake API.md` in the JUCE repo for all config options
 juce_add_plugin("${PROJECT_NAME}"
@@ -111,6 +110,11 @@ target_compile_features(SharedCode INTERFACE cxx_std_20)
 file(GLOB_RECURSE SourceFiles CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/source/*.h")
 target_sources(SharedCode INTERFACE ${SourceFiles})
 
+# Integrate TS-808-Ultra DSP sources required by TubeScreamer808
+# We include a minimal subset needed for the ClippingStage and Tone/DryLPF utilities
+target_sources(SharedCode INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/modules/TS-808-Ultra/Source/dsp/ClippingStage.cpp)
+
 # Adds a BinaryData target for embedding assets into the binary
 include(Assets)
 
@@ -145,7 +149,7 @@ target_compile_definitions(SharedCode
 target_link_libraries(SharedCode
         INTERFACE
         Assets
-        # melatonin_inspector
+        melatonin_inspector
         juce_audio_utils
         juce_audio_processors
         juce_dsp
@@ -157,6 +161,7 @@ target_link_libraries(SharedCode
 
 # Link the JUCE plugin targets our SharedCode target
 target_link_libraries("${PROJECT_NAME}" PRIVATE SharedCode)
+target_link_libraries("${PROJECT_NAME}" PRIVATE melatonin_inspector)
 
 # IPP support, comment out to disable
 #include(PamplejuceIPP)
