@@ -15,7 +15,7 @@ namespace melatonin
 {
     class Inspector;
 }
-// Custom TabbedComponent with double-click callback to toggle panel enable
+// Custom TabbedComponent with a double-click callback to a toggle panel enable
 class PanelTabbedComponent : public juce::TabbedComponent
 {
 public:
@@ -64,7 +64,7 @@ public:
     void initialise_instant_tooltip_toggle();
     void initialise_process_mode_selector();
     void initialise_preset_buttons();
-    LZ25AudioProcessorEditor (LZ25AudioProcessor&);
+    explicit LZ25AudioProcessorEditor (LZ25AudioProcessor&);
     ~LZ25AudioProcessorEditor() override;
 
     //==============================================================================
@@ -93,6 +93,8 @@ private:
     juce::TextButton _nextButton;
     juce::Label _irName;
     juce::Image _backgroundImage;
+    juce::Image _leftArrowImage;
+    juce::Image _rightArrowImage;
 
     // Preset save/load buttons
     juce::TextButton _savePresetButton { "Save Preset" };
