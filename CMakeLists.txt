@@ -52,6 +52,9 @@ add_subdirectory(JUCE)
 # This adds the melatonin inspector module
 add_subdirectory (modules/melatonin_inspector)
 
+# Add chowdsp_utils
+add_subdirectory (modules/chowdsp_utils)
+
 # See `docs/CMake API.md` in the JUCE repo for all config options
 juce_add_plugin("${PROJECT_NAME}"
         # Icons for the standalone app
@@ -150,6 +153,11 @@ target_link_libraries(SharedCode
         INTERFACE
         Assets
         melatonin_inspector
+        chowdsp::chowdsp_plugin_base
+        chowdsp::chowdsp_plugin_state
+        chowdsp::chowdsp_dsp_utils
+        chowdsp::chowdsp_filters
+        chowdsp::chowdsp_parameters
         juce_audio_utils
         juce_audio_processors
         juce_dsp

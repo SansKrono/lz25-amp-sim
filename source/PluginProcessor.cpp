@@ -39,6 +39,9 @@ LZ25AudioProcessor::LZ25AudioProcessor()
 
     // Initial setup for the chain. Coefficients will be set in prepareToPlay.
     updateProcessorChain();
+    
+    // Initialize new amp components
+    masterGainSmooth.reset (getSampleRate() > 0 ? getSampleRate() : 44100.0, 0.05);
 }
 #endif
 
@@ -265,6 +268,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout LZ25AudioProcessor::createPa
     parameters.push_back (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { "SATURATION_SHAPE", 1 }, "Saturation Shape", 0.0f, 2.0f, 1.0f));
     parameters.push_back (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { "TUBE_SAG", 1 }, "Tube Sag", 0.0f, 1.0f, 0.0f));
 
+    // New Tube Amp Parameters
+    parameters.push_back (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { "GAIN1", 1 }, "Gain 1", 0.0f, 1.0f, 0.6f));
+    parameters.push_back (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { "GAIN2", 1 }, "Gain 2", 0.0f, 1.0f, 0.6f));
+    parameters.push_back (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { "GAIN3", 1 }, "Gain 3", 0.0f, 1.0f, 0.5f));
+    parameters.push_back (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { "TUBE_MODEL", 1 }, "Tube Model", juce::StringArray { "Soft (Tanh)", "Medium (Arctan)", "Hard (Cubic)", "Asymmetric (Push-Pull)" }, 0));
+    parameters.push_back (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "BRIGHTNESS", 1 }, "Bright", false));
+
     // IR Enable parameter
     parameters.push_back (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "IR_ENABLE", 1 }, "IR Enable", true));
 
@@ -379,6 +389,25 @@ void LZ25AudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 
     irLoader.reset();
     irLoader.prepare (_spec);
+
+    // Prepare new amp head components
+    gainStage1.prepare (sampleRate, samplesPerBlock);
+    gainStage2.prepare (sampleRate, samplesPerBlock);
+    gainStage3.prepare (sampleRate, samplesPerBlock);
+    toneStack.prepare (sampleRate, samplesPerBlock);
+
+    // IO filters
+    dcBlocker.prepare ({ sampleRate, (uint32_t) samplesPerBlock, 1 });
+    dcBlocker.calcCoefs (10.0f, (float) sampleRate);
+
+    outputFilter.prepare ({ sampleRate, (uint32_t) samplesPerBlock, 1 });
+    outputFilter.calcCoefs (12000.0f, (float) sampleRate);
+
+    // Brightness cap
+    brightCap.prepare ({ sampleRate, (uint32_t) samplesPerBlock, 1 });
+    brightCap.calcCoefs (1500.0f, (float) sampleRate);
+
+    masterGainSmooth.reset (sampleRate, 0.05);
 
     // Prepare pre-fx effects
     if (pitch)
@@ -638,11 +667,78 @@ void LZ25AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         }
     }
 
-    // 2. Main Amp Processor Chain
+    // 2. New High-Gain Tube Amp Head Processing
     if (*apvts.getRawParameterValue ("AMP_PANEL_ENABLE") > 0.5f)
     {
-        juce::dsp::AudioBlock<float> processorChainBlock (buffer);
-        processorChain.process (juce::dsp::ProcessContextReplacing<float> (processorChainBlock));
+        const int numChannels = buffer.getNumChannels();
+        const int numSamples = buffer.getNumSamples();
+        if (numSamples == 0)
+            return;
+
+        // Read current parameter values and set targets for smoothing
+        const float g1 = juce::jlimit (0.0f, 4.0f, *apvts.getRawParameterValue ("GAIN1") * 4.0f);
+        const float g2 = juce::jlimit (0.0f, 4.0f, *apvts.getRawParameterValue ("GAIN2") * 4.0f);
+        const float g3 = juce::jlimit (0.0f, 4.0f, *apvts.getRawParameterValue ("GAIN3") * 4.0f);
+
+        gainStage1.setGain (g1);
+        gainStage2.setGain (g2);
+        gainStage3.setGain (g3);
+
+        toneStack.setBass (*apvts.getRawParameterValue ("BASS"));
+        toneStack.setMid (*apvts.getRawParameterValue ("MID"));
+        toneStack.setTreble (*apvts.getRawParameterValue ("TREBLE"));
+        toneStack.setPresence (*apvts.getRawParameterValue ("PRESENCE"));
+
+        const int tubeIndex = static_cast<int>(*apvts.getRawParameterValue ("TUBE_MODEL"));
+        gainStage1.setTubeModel (tubeIndex);
+        gainStage2.setTubeModel (tubeIndex);
+        gainStage3.setTubeModel (tubeIndex);
+
+        masterGainSmooth.setTargetValue (juce::jlimit (0.0f, 1.5f, *apvts.getRawParameterValue ("POSTGAIN") * 0.1f + 1.0f));
+
+        const bool brightOn = *apvts.getRawParameterValue ("BRIGHTNESS") > 0.5f;
+
+        // Choose input channel: if multiple channels, pick the one with higher RMS
+        int inChan = 0;
+        if (numChannels >= 2)
+        {
+            const float* ch0 = buffer.getReadPointer (0);
+            const float* ch1 = buffer.getReadPointer (1);
+            double sum0 = 0.0, sum1 = 0.0;
+            for (int n = 0; n < numSamples; ++n)
+            {
+                sum0 += (double) ch0[n] * (double) ch0[n];
+                sum1 += (double) ch1[n] * (double) ch1[n];
+            }
+            inChan = (sum1 > sum0 ? 1 : 0);
+        }
+
+        const float* inData = buffer.getReadPointer (inChan);
+        float* out0 = buffer.getWritePointer (0);
+
+        for (int n = 0; n < numSamples; ++n)
+        {
+            float x = inData[n];
+
+            x = dcBlocker.processSample (x);
+            if (brightOn)
+                x = brightCap.processSample (x);
+
+            x = gainStage1.processSample (x);
+            x = gainStage2.processSample (x);
+            x = gainStage3.processSample (x);
+
+            x = toneStack.processSample (x);
+
+            x *= masterGainSmooth.getNextValue();
+            x = outputFilter.processSample (x);
+
+            out0[n] = x; // mono output
+        }
+
+        // Mirror mono to any additional channels (dual-mono if needed)
+        for (int ch = 1; ch < numChannels; ++ch)
+            buffer.copyFrom (ch, 0, buffer, 0, 0, numSamples);
     }
 
     // 3. IR Loader

@@ -62,6 +62,19 @@ private:
     juce::Slider _sliderTubeSag;
     juce::Label _labelTubeSag;
 
+    // New Tube Amp Parameters
+    juce::Slider _sliderGain2;
+    juce::Label _labelGain2;
+    
+    juce::Slider _sliderGain3;
+    juce::Label _labelGain3;
+    
+    juce::ToggleButton _toggleBrightness;
+    juce::Label _labelBrightness;
+    
+    juce::ComboBox _comboTubeModel;
+    juce::Label _labelTubeModel;
+
     // Parameter attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _sliderAttachmentInput;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _sliderAttachmentPreGain;
@@ -76,7 +89,12 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _sliderAttachmentHarmonicCharacter;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _sliderAttachmentSaturationShape;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _sliderAttachmentTubeSag;
-
+    
+    // New parameter attachments
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _sliderAttachmentGain2;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _sliderAttachmentGain3;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> _toggleAttachmentBrightness;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> _comboAttachmentTubeModel;
 
     // Look and feel
     MXRLookAndFeel _sliderLookAndFeel;

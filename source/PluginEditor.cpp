@@ -112,7 +112,7 @@ void LZ25AudioProcessorEditor::initialise_tabbed_components()
 
     // Style the tabbed component
     _tabbedComponent.setTabBarDepth (36);
-    _tabbedComponent.setCurrentTabIndex (0); // Start with PRE FX tab
+    _tabbedComponent.setCurrentTabIndex (2); // Start with PRE FX tab
 
     // Apply custom LookAndFeel to tabs for even spread and rounded headers
     auto& tabBar = _tabbedComponent.getTabbedButtonBar();
@@ -197,7 +197,7 @@ LZ25AudioProcessorEditor::LZ25AudioProcessorEditor (LZ25AudioProcessor& p)
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (1100, 600); // Increased height to accommodate tabs
+    setSize (1250, 600); // Increased height to accommodate tabs
     auto area = getLocalBounds();
     auto bottom = area.removeFromBottom (20);
     bottom = bottom.removeFromRight (40);

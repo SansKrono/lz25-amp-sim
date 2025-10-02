@@ -3,7 +3,7 @@
 
 //==============================================================================
 BigCheeseFuzz::BigCheeseFuzz()
-    : EffectPedal("BIG CHEESE", "BIGCHEESE", EnclosureType::Enclosure1590BB)
+    : EffectPedal("FUZZ", "BIGCHEESE", EnclosureType::Enclosure1590BB)
 {
 }
 

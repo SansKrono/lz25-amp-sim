@@ -140,11 +140,53 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _labelTubeSag.setJustificationType (juce::Justification::centred);
     _labelTubeSag.setColour (juce::Label::textColourId, juce::Colours::white);
 
+    // New Tube Amp components setup
+    // GAIN2 slider setup
+    addAndMakeVisible (_sliderGain2);
+    setSliderProperties (&_sliderGain2);
+    _sliderGain2.setLookAndFeel (&_sliderLookAndFeel);
+    _sliderGain2.setTooltip ("Second gain stage for tube amp saturation. Turn up for more drive and sustain.");
+    addAndMakeVisible (_labelGain2);
+    _labelGain2.setText ("GAIN 2", juce::dontSendNotification);
+    _labelGain2.setJustificationType (juce::Justification::centred);
+    _labelGain2.setColour (juce::Label::textColourId, juce::Colours::white);
+
+    // GAIN3 slider setup
+    addAndMakeVisible (_sliderGain3);
+    setSliderProperties (&_sliderGain3);
+    _sliderGain3.setLookAndFeel (&_sliderLookAndFeel);
+    _sliderGain3.setTooltip ("Third gain stage for tube amp saturation. Turn up for maximum drive and distortion.");
+    addAndMakeVisible (_labelGain3);
+    _labelGain3.setText ("GAIN 3", juce::dontSendNotification);
+    _labelGain3.setJustificationType (juce::Justification::centred);
+    _labelGain3.setColour (juce::Label::textColourId, juce::Colours::white);
+
+    // BRIGHTNESS toggle setup
+    addAndMakeVisible (_toggleBrightness);
+    _toggleBrightness.setButtonText ("");
+    _toggleBrightness.setTooltip ("Brightness cap switch. Turn on for brighter, more cutting tone.");
+    addAndMakeVisible (_labelBrightness);
+    _labelBrightness.setText ("BRIGHT", juce::dontSendNotification);
+    _labelBrightness.setJustificationType (juce::Justification::centred);
+    _labelBrightness.setColour (juce::Label::textColourId, juce::Colours::white);
+
+    // TUBE_MODEL combo box setup
+    addAndMakeVisible (_comboTubeModel);
+    _comboTubeModel.addItem ("Soft (Tanh)", 1);
+    _comboTubeModel.addItem ("Medium (Arctan)", 2);
+    _comboTubeModel.addItem ("Hard (Cubic)", 3);
+    _comboTubeModel.addItem ("Asymmetric (Push-Pull)", 4);
+    _comboTubeModel.setTooltip ("Select tube saturation model for different distortion characteristics.");
+    addAndMakeVisible (_labelTubeModel);
+    _labelTubeModel.setText ("TUBE MODEL", juce::dontSendNotification);
+    _labelTubeModel.setJustificationType (juce::Justification::centred);
+    _labelTubeModel.setColour (juce::Label::textColourId, juce::Colours::white);
+
     // Create parameter attachments
     _sliderAttachmentInput = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "INPUT", _sliderInput);
     _sliderAttachmentPreGain = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
-        apvts, "PREGAIN", _sliderPreGain);
+        apvts, "GAIN1", _sliderPreGain);
     _sliderAttachmentResonance = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "RESONANCE", _sliderResonance);
     _sliderAttachmentDrive = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
@@ -167,6 +209,16 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
         apvts, "PRESENCE", _sliderPresence);
     _sliderAttachmentPostGain = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "POSTGAIN", _sliderPostGain);
+        
+    // New parameter attachments
+    _sliderAttachmentGain2 = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+        apvts, "GAIN2", _sliderGain2);
+    _sliderAttachmentGain3 = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+        apvts, "GAIN3", _sliderGain3);
+    _toggleAttachmentBrightness = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment> (
+        apvts, "BRIGHTNESS", _toggleBrightness);
+    _comboAttachmentTubeModel = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment> (
+        apvts, "TUBE_MODEL", _comboTubeModel);
 }
 
 AmpPanel::~AmpPanel() = default;
@@ -259,15 +311,15 @@ void AmpPanel::resized()
     area.removeFromTop (rowSpacing);
     auto row2 = area; // remaining for row 2
 
-    // Horizontal spacing for each row
-    const int row1KnobCount = 7;
-    const int row1Spacing = juce::jmax (6, (row1.getWidth() - row1KnobCount * sliderWidth) / (row1KnobCount + 1));
+    // Horizontal spacing for each row - updated for new controls
+    const int row1KnobCount = 10; // INPUT, GAIN1, GAIN2, GAIN3, BASS, MID, TREBLE, PRESENCE, BRIGHTNESS, POST GAIN
+    const int row1Spacing = juce::jmax (4, (row1.getWidth() - row1KnobCount * sliderWidth) / (row1KnobCount + 1));
 
-    const int row2KnobCount = 6;
-    const float secondRowScale = 0.8f;
+    const int row2KnobCount = 1;
+    const float secondRowScale = 1.0f;
     const int row2SliderWidth = juce::roundToInt (sliderWidth * secondRowScale);
     const int row2SliderHeight = juce::roundToInt (sliderHeight * secondRowScale);
-    const int row2Spacing = juce::jmax (6, (row2.getWidth() - row2KnobCount * row2SliderWidth) / (row2KnobCount + 1));
+    const int row2Spacing = juce::jmax (row2KnobCount, (row2.getWidth() - row2KnobCount * row2SliderWidth) / (row2KnobCount + 1));
 
     const int topRowY = row1.getY();
     const int topLabelsY = topRowY + sliderHeight + labelGap;
@@ -282,6 +334,15 @@ void AmpPanel::resized()
 
     _sliderPreGain.setBounds (x, topRowY, sliderWidth, sliderHeight);
     _labelPreGain.setBounds (x, topLabelsY, sliderWidth, labelHeight);
+    _labelPreGain.setText ("GAIN 1", juce::dontSendNotification); // Update label to reflect GAIN1
+    x += sliderWidth + row1Spacing;
+
+    _sliderGain2.setBounds (x, topRowY, sliderWidth, sliderHeight);
+    _labelGain2.setBounds (x, topLabelsY, sliderWidth, labelHeight);
+    x += sliderWidth + row1Spacing;
+
+    _sliderGain3.setBounds (x, topRowY, sliderWidth, sliderHeight);
+    _labelGain3.setBounds (x, topLabelsY, sliderWidth, labelHeight);
     x += sliderWidth + row1Spacing;
 
     _sliderBass.setBounds (x, topRowY, sliderWidth, sliderHeight);
@@ -300,32 +361,18 @@ void AmpPanel::resized()
     _labelPresence.setBounds (x, topLabelsY, sliderWidth, labelHeight);
     x += sliderWidth + row1Spacing;
 
+    _toggleBrightness.setBounds (x, topRowY, sliderWidth, sliderHeight);
+    _labelBrightness.setBounds (x, topLabelsY, sliderWidth, labelHeight);
+    x += sliderWidth + row1Spacing;
+
     _sliderPostGain.setBounds (x, topRowY, sliderWidth, sliderHeight);
     _labelPostGain.setBounds (x, topLabelsY, sliderWidth, labelHeight);
 
-    // Row 2
-    // x = row2.getX() + row2Spacing;
-    //
-    // _sliderResonance.setBounds (x, bottomRowY, row2SliderWidth, row2SliderHeight);
-    // _labelResonance.setBounds (x, bottomLabelsY, row2SliderWidth, labelHeight);
-    // x += row2SliderWidth + row2Spacing;
-    //
-    // _sliderDrive.setBounds (x, bottomRowY, row2SliderWidth, row2SliderHeight);
-    // _labelDrive.setBounds (x, bottomLabelsY, row2SliderWidth, labelHeight);
-    // x += row2SliderWidth + row2Spacing;
-    //
-    // _sliderAsymmetry.setBounds (x, bottomRowY, row2SliderWidth, row2SliderHeight);
-    // _labelAsymmetry.setBounds (x, bottomLabelsY, row2SliderWidth, labelHeight);
-    // x += row2SliderWidth + row2Spacing;
-    //
-    // _sliderHarmonicCharacter.setBounds (x, bottomRowY, row2SliderWidth, row2SliderHeight);
-    // _labelHarmonicCharacter.setBounds (x, bottomLabelsY, row2SliderWidth, labelHeight);
-    // x += row2SliderWidth + row2Spacing;
-    //
-    // _sliderSaturationShape.setBounds (x, bottomRowY, row2SliderWidth, row2SliderHeight);
-    // _labelSaturationShape.setBounds (x, bottomLabelsY, row2SliderWidth, labelHeight);
-    // x += row2SliderWidth + row2Spacing;
-    //
-    // _sliderTubeSag.setBounds (x, bottomRowY, row2SliderWidth, row2SliderHeight);
-    // _labelTubeSag.setBounds (x, bottomLabelsY, row2SliderWidth, labelHeight);
+    // Row 2 - TUBE_MODEL dropdown
+    int x2 = row2.getX() + row2Spacing;
+    const int comboBoxWidth = 180;
+    const int comboBoxHeight = 25;
+    
+    _comboTubeModel.setBounds (x2, bottomRowY + 30, comboBoxWidth, comboBoxHeight);
+    _labelTubeModel.setBounds (x2, bottomLabelsY, comboBoxWidth, labelHeight);
 }

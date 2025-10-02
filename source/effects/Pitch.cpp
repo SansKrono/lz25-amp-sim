@@ -1,7 +1,7 @@
 #include "Pitch.h"
 
 Pitch::Pitch()
-: EffectPedal("Pitch", "PITCH", EffectPedal::EnclosureType::Enclosure1590B)
+: EffectPedal("PITCH", "PITCH", EffectPedal::EnclosureType::Enclosure1590B)
 {
 }
 

@@ -3,7 +3,7 @@
 
 //==============================================================================
 MxrDynaComp::MxrDynaComp()
-    : EffectPedal("DYNA COMP", "COMP", EnclosureType::Enclosure1590BB)  // Increased size to ensure knob fit
+    : EffectPedal("COMPRESSOR", "COMP", EnclosureType::Enclosure1590BB)  // Increased size to ensure knob fit
 {
 }
 
