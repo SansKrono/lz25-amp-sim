@@ -72,18 +72,16 @@ void LZ25AudioProcessorEditor::initialise_load_button()
 void LZ25AudioProcessorEditor::initialise_ir_navigation_buttons()
 {
     addAndMakeVisible (_prevButton);
-    _prevButton.setButtonText ("<");
-    _prevButton.setColour (juce::TextButton::buttonColourId, juce::Colours::darkgrey); // Dark button
-    _prevButton.setColour (juce::TextButton::textColourOffId, juce::Colours::white); // White text
+    _prevButton.setButtonText (""); // Remove text
+    _prevButton.setColour (juce::TextButton::buttonColourId, juce::Colours::transparentBlack);
     _prevButton.onClick = [this]() {
         if (audioProcessor.prevIR())
             _irName.setText (audioProcessor.getCurrentIRName(), juce::dontSendNotification);
     };
 
     addAndMakeVisible (_nextButton);
-    _nextButton.setButtonText (">");
-    _nextButton.setColour (juce::TextButton::buttonColourId, juce::Colours::darkgrey); // Dark button
-    _nextButton.setColour (juce::TextButton::textColourOffId, juce::Colours::white); // White text
+    _nextButton.setButtonText (""); // Remove text
+    _nextButton.setColour (juce::TextButton::buttonColourId, juce::Colours::transparentBlack);
     _nextButton.onClick = [this]() {
         if (audioProcessor.nextIR())
             _irName.setText (audioProcessor.getCurrentIRName(), juce::dontSendNotification);
@@ -92,6 +90,7 @@ void LZ25AudioProcessorEditor::initialise_ir_navigation_buttons()
 void LZ25AudioProcessorEditor::initialise_ir_name_display()
 {
     _irName.setText (audioProcessor.savedFile.getFileName(), juce::dontSendNotification);
+    _irName.setJustificationType (juce::Justification::centred); // Centred
     _irName.setColour (juce::TextButton::buttonColourId, juce::Colours::darkgrey); // Dark button
     _irName.setColour (juce::TextButton::textColourOffId, juce::Colours::white); // White text
     addAndMakeVisible (_irName);
@@ -104,7 +103,7 @@ void LZ25AudioProcessorEditor::initialise_tabbed_components()
     _ampPanel = std::make_unique<AmpPanel> (audioProcessor.apvts);
     _postFXPanel = std::make_unique<PostFXPanel> (audioProcessor.apvts);
 
-    // Add panels to tabbed component (new order)
+    // Add panels to the tabbed component (new order)
     _tabbedComponent.addTab ("PITCH/DYNAMICS", juce::Colours::transparentBlack, _pitchDynPanel.get(), false);
     _tabbedComponent.addTab ("PRE-AMP", juce::Colours::transparentBlack, _preFXPanel.get(), false);
     _tabbedComponent.addTab ("AMP", juce::Colours::transparentBlack, _ampPanel.get(), false);
@@ -118,6 +117,11 @@ void LZ25AudioProcessorEditor::initialise_tabbed_components()
     auto& tabBar = _tabbedComponent.getTabbedButtonBar();
     tabBar.setLookAndFeel (&_tabsLookAndFeel);
     tabBar.setMinimumTabScaleFactor (1.0); // don't shrink; our LAF sizes evenly
+
+    // Remove internal borders/outline around the tab content area
+    _tabbedComponent.setColour (juce::TabbedComponent::outlineColourId, juce::Colours::transparentBlack);
+    _tabbedComponent.setColour (juce::TabbedComponent::backgroundColourId, juce::Colours::transparentBlack);
+    tabBar.setColour (juce::TabbedButtonBar::tabOutlineColourId, juce::Colours::transparentBlack);
 
     addAndMakeVisible (_tabbedComponent);
 
@@ -140,11 +144,11 @@ void LZ25AudioProcessorEditor::initialise_preset_buttons()
             juce::FileBrowserComponent::saveMode | juce::FileBrowserComponent::canSelectFiles,
             [this] (const juce::FileChooser& fc) {
                 juce::File chosen = fc.getResult();
-                if (! chosen.exists() && chosen.getFileName().isNotEmpty())
+                if (!chosen.exists() && chosen.getFileName().isNotEmpty())
                 {
                     // proceed, user typed a new name
                 }
-                else if (! chosen.existsAsFile())
+                else if (!chosen.existsAsFile())
                 {
                     return; // user cancelled
                 }
@@ -152,7 +156,7 @@ void LZ25AudioProcessorEditor::initialise_preset_buttons()
                 if (chosen.getFileExtension().isEmpty())
                     chosen = chosen.withFileExtension (".lz25preset");
 
-                if (! audioProcessor.savePreset (chosen))
+                if (!audioProcessor.savePreset (chosen))
                     juce::AlertWindow::showMessageBoxAsync (juce::AlertWindow::WarningIcon, "Save Preset", "Failed to save preset.");
             });
     };
@@ -164,10 +168,10 @@ void LZ25AudioProcessorEditor::initialise_preset_buttons()
             juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles,
             [this] (const juce::FileChooser& fc) {
                 auto chosen = fc.getResult();
-                if (! chosen.existsAsFile())
+                if (!chosen.existsAsFile())
                     return; // user cancelled or invalid
 
-                if (! audioProcessor.loadPreset (chosen))
+                if (!audioProcessor.loadPreset (chosen))
                     juce::AlertWindow::showMessageBoxAsync (juce::AlertWindow::WarningIcon, "Load Preset", "Failed to load preset.");
                 else
                     _irName.setText (audioProcessor.getCurrentIRName(), juce::dontSendNotification);
@@ -202,6 +206,11 @@ LZ25AudioProcessorEditor::LZ25AudioProcessorEditor (LZ25AudioProcessor& p)
     auto bottom = area.removeFromBottom (20);
     bottom = bottom.removeFromRight (40);
     inspectButton.setBounds (bottom);
+
+    // Load arrow images
+    _leftArrowImage = juce::ImageCache::getFromMemory (BinaryData::Left_Arrowpng1x_png, BinaryData::Left_Arrowpng1x_pngSize);
+    _rightArrowImage = juce::ImageCache::getFromMemory (BinaryData::Right_Arrowpng1x_png, BinaryData::Right_Arrowpng1x_pngSize);
+    _backgroundImage = juce::ImageCache::getFromMemory (BinaryData::bg_png, BinaryData::bg_pngSize);
 
     initialise_meter_and_timer();
     initialise_melatonin_inspector (area);
@@ -238,7 +247,7 @@ void LZ25AudioProcessorEditor::fileLoader()
 {
     _fileChooser = std::make_unique<juce::FileChooser> ("Choose IR file or folder", audioProcessor.root, "*");
 
-    const auto fileChooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles | juce::FileBrowserComponent::canSelectDirectories;
+    constexpr auto fileChooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles | juce::FileBrowserComponent::canSelectDirectories;
 
     _fileChooser->launchAsync (fileChooserFlags, [this] (const juce::FileChooser& chooser) {
         juce::File result (chooser.getResult());
@@ -266,7 +275,7 @@ void LZ25AudioProcessorEditor::fileLoader()
 //==============================================================================
 void LZ25AudioProcessorEditor::paint (juce::Graphics& g)
 {
-    // Modern flat background with light color palette
+    // Modern flat background with light colour palette
     auto bounds = getLocalBounds().toFloat();
 
     // Primary light background
@@ -305,6 +314,19 @@ void LZ25AudioProcessorEditor::paint (juce::Graphics& g)
         false);
     g.setGradientFill (subtleGradient);
     g.fillRoundedRectangle (gradientArea, 10.0f);
+
+    // Draw arrow images on buttons
+    if (_leftArrowImage.isValid())
+    {
+        auto prevBounds = _prevButton.getBounds().toFloat();
+        g.drawImage (_leftArrowImage, prevBounds, juce::RectanglePlacement::centred);
+    }
+    
+    if (_rightArrowImage.isValid())
+    {
+        auto nextBounds = _nextButton.getBounds().toFloat();
+        g.drawImage (_rightArrowImage, nextBounds, juce::RectanglePlacement::centred);
+    }
 }
 
 void LZ25AudioProcessorEditor::resized()
@@ -322,10 +344,10 @@ void LZ25AudioProcessorEditor::resized()
 
     // Instant tooltip toggle anchored to the right with a slight margin
     {
-        const int toggleW = 160;
-        const int toggleH = 35;
+        constexpr int toggleW = 70;
+        constexpr int toggleH = 35;
         const int toggleY = topSection.getY() + 20;
-        const int margin = 16; // slight margin from the right edge
+        constexpr int margin = 16; // slight margin from the right edge
 
         // Position the tooltip toggle.
         const int tooltipToggleX = topSection.getRight() - margin - toggleW;
@@ -336,14 +358,14 @@ void LZ25AudioProcessorEditor::resized()
         _irEnableToggle.setBounds (irToggleX, toggleY, toggleW, toggleH);
 
         // Position the Process Mode selector to the left of IR toggle
-        const int processW = 140;
-        const int processH = toggleH;
+        constexpr int processW = 140;
+        constexpr int processH = toggleH;
         const int processX = irToggleX - margin - processW;
         _processModeBox.setBounds (processX, toggleY, processW, processH);
 
         // Preset buttons to the left of process mode
-        const int presetW = 120;
-        const int presetH = toggleH;
+        constexpr int presetW = 120;
+        constexpr int presetH = toggleH;
         const int loadX = processX - margin - presetW;
         const int saveX = loadX - margin - presetW;
         _loadPresetButton.setBounds (loadX, toggleY, presetW, presetH);
@@ -351,7 +373,7 @@ void LZ25AudioProcessorEditor::resized()
     }
 
     // Left side for input meter
-    auto leftSection = bounds.removeFromLeft (40);
+    const auto leftSection = bounds.removeFromLeft (40);
     int meterWidth = 40;
     int meterHeight = 370 + 45;
     int meterY = leftSection.getY() + 55;
@@ -363,7 +385,7 @@ void LZ25AudioProcessorEditor::resized()
     int meterRightX = rightSection.getX() - 15;
     _meterOutput.setBounds (meterRightX, meterY, meterWidth, meterHeight);
 
-    // Remaining space for tabbed component
+    // Remaining space for the tabbed component
     auto tabArea = bounds.reduced (20);
     _tabbedComponent.setBounds (tabArea);
 }
@@ -422,7 +444,6 @@ void LZ25AudioProcessorEditor::updateTabVisuals()
         _tabbedComponent.setTabBackgroundColour (e.index, colour);
     }
 }
-
 
 void LZ25AudioProcessorEditor::initialise_process_mode_selector()
 {
