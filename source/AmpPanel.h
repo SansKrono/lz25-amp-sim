@@ -3,6 +3,24 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "LookAndFeel.h"
 
+// Custom slider class for double-click detection
+class DoubleClickSlider : public juce::Slider
+{
+public:
+    DoubleClickSlider() = default;
+    
+    std::function<void()> onDoubleClickCallback;
+    
+    void mouseDoubleClick(const juce::MouseEvent& event) override
+    {
+        if (onDoubleClickCallback)
+            onDoubleClickCallback();
+        
+        // Call parent implementation to maintain normal double-click behavior (reset to default)
+        juce::Slider::mouseDoubleClick(event);
+    }
+};
+
 class AmpPanel : public juce::Component
 {
 public:
@@ -14,6 +32,11 @@ public:
 
 private:
     void setSliderProperties(juce::Slider* sliderToSet);
+    
+    // Double-click handling for gain stage bypass
+    void onGain1DoubleClick();
+    void onGain2DoubleClick();
+    void onGain3DoubleClick();
 
     // Background amp faceplate image and computed areas
     juce::Image _ampFaceImage;
@@ -24,7 +47,7 @@ private:
     juce::Slider _sliderInput;
     juce::Label _labelInput;
     
-    juce::Slider _sliderPreGain;
+    DoubleClickSlider _sliderPreGain;
     juce::Label _labelPreGain;
     
     juce::Slider _sliderResonance;
@@ -63,17 +86,25 @@ private:
     juce::Label _labelTubeSag;
 
     // New Tube Amp Parameters
-    juce::Slider _sliderGain2;
+    DoubleClickSlider _sliderGain2;
     juce::Label _labelGain2;
     
-    juce::Slider _sliderGain3;
+    DoubleClickSlider _sliderGain3;
     juce::Label _labelGain3;
     
     juce::ToggleButton _toggleBrightness;
     juce::Label _labelBrightness;
     
-    juce::ComboBox _comboTubeModel;
-    juce::Label _labelTubeModel;
+    
+    // Gain Stage Type Selectors
+    juce::ComboBox _comboGainStage1Type;
+    juce::Label _labelGainStage1Type;
+    
+    juce::ComboBox _comboGainStage2Type;
+    juce::Label _labelGainStage2Type;
+    
+    juce::ComboBox _comboGainStage3Type;
+    juce::Label _labelGainStage3Type;
 
     // Parameter attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _sliderAttachmentInput;
@@ -94,10 +125,17 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _sliderAttachmentGain2;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _sliderAttachmentGain3;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> _toggleAttachmentBrightness;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> _comboAttachmentTubeModel;
+    
+    // Gain Stage Type parameter attachments
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> _comboAttachmentGainStage1Type;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> _comboAttachmentGainStage2Type;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> _comboAttachmentGainStage3Type;
 
     // Look and feel
     MXRLookAndFeel _sliderLookAndFeel;
+    
+    // Reference to APVTS for bypass parameter control
+    juce::AudioProcessorValueTreeState& _apvts;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AmpPanel)
 };

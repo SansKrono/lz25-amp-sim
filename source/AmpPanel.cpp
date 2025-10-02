@@ -1,14 +1,16 @@
 #include "AmpPanel.h"
 #include "BinaryData.h"
+#include "PluginProcessor.h"
 
-AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
+AmpPanel::AmpPanel (AudioProcessorValueTreeState& apvts)
+    : _apvts(apvts)
 {
     // Disable knob surround on amp panel knobs
     _sliderLookAndFeel.setKnobSurroundEnabled (false);
 
     // Load amp face image from embedded BinaryData (fallback-safe)
     if (BinaryData::amphead_png != nullptr && BinaryData::amphead_pngSize > 0)
-        _ampFaceImage = juce::ImageFileFormat::loadFrom (BinaryData::amphead_png, (size_t) BinaryData::amphead_pngSize);
+        _ampFaceImage = ImageFileFormat::loadFrom (BinaryData::amphead_png, (size_t) BinaryData::amphead_pngSize);
 
     // Input slider setup
     addAndMakeVisible (_sliderInput);
@@ -16,9 +18,9 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _sliderInput.setLookAndFeel (&_sliderLookAndFeel);
     _sliderInput.setTooltip ("Input level into the amp. Turn up to push the whole circuit harder (hotter signal, more saturation/noise). Turn down to keep things clean and prevent clipping.");
     addAndMakeVisible (_labelInput);
-    _labelInput.setText ("INPUT", juce::dontSendNotification);
-    _labelInput.setJustificationType (juce::Justification::centred);
-    _labelInput.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelInput.setText ("INPUT", dontSendNotification);
+    _labelInput.setJustificationType (Justification::centred);
+    _labelInput.setColour (Label::textColourId, Colours::white);
 
     // Pre Gain slider setup
     addAndMakeVisible (_sliderPreGain);
@@ -26,9 +28,9 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _sliderPreGain.setLookAndFeel (&_sliderLookAndFeel);
     _sliderPreGain.setTooltip ("Preamp gain before distortion. Turn up for more drive and sustain; turn down for a cleaner tone and more headroom.");
     addAndMakeVisible (_labelPreGain);
-    _labelPreGain.setText ("PRE GAIN", juce::dontSendNotification);
-    _labelPreGain.setJustificationType (juce::Justification::centred);
-    _labelPreGain.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelPreGain.setText ("PRE GAIN", dontSendNotification);
+    _labelPreGain.setJustificationType (Justification::centred);
+    _labelPreGain.setColour (Label::textColourId, Colours::white);
 
     // Bass slider setup
     addAndMakeVisible (_sliderBass);
@@ -36,9 +38,9 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _sliderBass.setLookAndFeel (&_sliderLookAndFeel);
     _sliderBass.setTooltip ("Low frequencies (thump). Turn up for more weight and sub lows; turn down to tighten the bottom and reduce boom.");
     addAndMakeVisible (_labelBass);
-    _labelBass.setText ("BASS", juce::dontSendNotification);
-    _labelBass.setJustificationType (juce::Justification::centred);
-    _labelBass.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelBass.setText ("BASS", dontSendNotification);
+    _labelBass.setJustificationType (Justification::centred);
+    _labelBass.setColour (Label::textColourId, Colours::white);
 
     // Mid slider setup
     addAndMakeVisible (_sliderMid);
@@ -46,9 +48,9 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _sliderMid.setLookAndFeel (&_sliderLookAndFeel);
     _sliderMid.setTooltip ("Midrange body and note definition. Turn up for more presence and cut; turn down for a modern scooped tone.");
     addAndMakeVisible (_labelMid);
-    _labelMid.setText ("MID", juce::dontSendNotification);
-    _labelMid.setJustificationType (juce::Justification::centred);
-    _labelMid.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelMid.setText ("MID", dontSendNotification);
+    _labelMid.setJustificationType (Justification::centred);
+    _labelMid.setColour (Label::textColourId, Colours::white);
 
     // Treble slider setup
     addAndMakeVisible (_sliderTreble);
@@ -56,9 +58,9 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _sliderTreble.setLookAndFeel (&_sliderLookAndFeel);
     _sliderTreble.setTooltip ("High frequencies/brightness. Turn up for more bite and sizzle; turn down to smooth the top end.");
     addAndMakeVisible (_labelTreble);
-    _labelTreble.setText ("TREBLE", juce::dontSendNotification);
-    _labelTreble.setJustificationType (juce::Justification::centred);
-    _labelTreble.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelTreble.setText ("TREBLE", dontSendNotification);
+    _labelTreble.setJustificationType (Justification::centred);
+    _labelTreble.setColour (Label::textColourId, Colours::white);
 
     // Presence slider setup
     addAndMakeVisible (_sliderPresence);
@@ -66,9 +68,9 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _sliderPresence.setLookAndFeel (&_sliderLookAndFeel);
     _sliderPresence.setTooltip ("High-shelf in the power-amp region (air/attack). Turn up for more sparkle and pick clarity; turn down to tame fizz and harshness.");
     addAndMakeVisible (_labelPresence);
-    _labelPresence.setText ("PRESENCE", juce::dontSendNotification);
-    _labelPresence.setJustificationType (juce::Justification::centred);
-    _labelPresence.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelPresence.setText ("PRESENCE", dontSendNotification);
+    _labelPresence.setJustificationType (Justification::centred);
+    _labelPresence.setColour (Label::textColourId, Colours::white);
 
     // Post Gain slider setup
     addAndMakeVisible (_sliderPostGain);
@@ -76,9 +78,9 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _sliderPostGain.setLookAndFeel (&_sliderLookAndFeel);
     _sliderPostGain.setTooltip ("Output volume after the amp/EQ. Turn up to make the plugin louder (does not add extra distortion); turn down to match levels.");
     addAndMakeVisible (_labelPostGain);
-    _labelPostGain.setText ("POST GAIN", juce::dontSendNotification);
-    _labelPostGain.setJustificationType (juce::Justification::centred);
-    _labelPostGain.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelPostGain.setText ("POST GAIN", dontSendNotification);
+    _labelPostGain.setJustificationType (Justification::centred);
+    _labelPostGain.setColour (Label::textColourId, Colours::white);
 
     // Resonance slider setup
     addAndMakeVisible (_sliderResonance);
@@ -86,9 +88,9 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _sliderResonance.setLookAndFeel (&_sliderLookAndFeel);
     _sliderResonance.setTooltip ("Low-frequency resonance around the cab. Turn up for bigger low-end bloom and punch; turn down for a tighter, more controlled bottom.");
     addAndMakeVisible (_labelResonance);
-    _labelResonance.setText ("RESONANCE", juce::dontSendNotification);
-    _labelResonance.setJustificationType (juce::Justification::centred);
-    _labelResonance.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelResonance.setText ("RESONANCE", dontSendNotification);
+    _labelResonance.setJustificationType (Justification::centred);
+    _labelResonance.setColour (Label::textColourId, Colours::white);
 
     // Drive slider setup
     addAndMakeVisible (_sliderDrive);
@@ -96,9 +98,9 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _sliderDrive.setLookAndFeel (&_sliderLookAndFeel);
     _sliderDrive.setTooltip ("Amount of saturation in the waveshaper. Turn up for heavier distortion and sustain; turn down for a cleaner tone.");
     addAndMakeVisible (_labelDrive);
-    _labelDrive.setText ("DRIVE", juce::dontSendNotification);
-    _labelDrive.setJustificationType (juce::Justification::centred);
-    _labelDrive.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelDrive.setText ("DRIVE", dontSendNotification);
+    _labelDrive.setJustificationType (Justification::centred);
+    _labelDrive.setColour (Label::textColourId, Colours::white);
 
     // Asymmetry slider setup
     addAndMakeVisible (_sliderAsymmetry);
@@ -106,9 +108,9 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _sliderAsymmetry.setLookAndFeel (&_sliderLookAndFeel);
     _sliderAsymmetry.setTooltip ("Balances positive vs. negative clipping. Turn up for more asymmetry (adds even-order harmonics and a warmer compressed feel); turn down for symmetric clipping (more odd-order bite).");
     addAndMakeVisible (_labelAsymmetry);
-    _labelAsymmetry.setText ("ASYMMETRY", juce::dontSendNotification);
-    _labelAsymmetry.setJustificationType (juce::Justification::centred);
-    _labelAsymmetry.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelAsymmetry.setText ("ASYMMETRY", dontSendNotification);
+    _labelAsymmetry.setJustificationType (Justification::centred);
+    _labelAsymmetry.setColour (Label::textColourId, Colours::white);
 
     // Harmonic Character slider setup
     addAndMakeVisible (_sliderHarmonicCharacter);
@@ -116,9 +118,9 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _sliderHarmonicCharacter.setLookAndFeel (&_sliderLookAndFeel);
     _sliderHarmonicCharacter.setTooltip ("Voices which harmonics are emphasized. Turn up toward odd-harmonics for aggressive bite and edge; turn down toward even-harmonics for smoother warmth.");
     addAndMakeVisible (_labelHarmonicCharacter);
-    _labelHarmonicCharacter.setText ("HARMONIC", juce::dontSendNotification);
-    _labelHarmonicCharacter.setJustificationType (juce::Justification::centred);
-    _labelHarmonicCharacter.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelHarmonicCharacter.setText ("HARMONIC", dontSendNotification);
+    _labelHarmonicCharacter.setJustificationType (Justification::centred);
+    _labelHarmonicCharacter.setColour (Label::textColourId, Colours::white);
 
     // Saturation Shape slider setup
     addAndMakeVisible (_sliderSaturationShape);
@@ -126,9 +128,9 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _sliderSaturationShape.setLookAndFeel (&_sliderLookAndFeel);
     _sliderSaturationShape.setTooltip ("Shape of the clipping knee. Turn up for a harder clip (sharper, more aggressive); turn down for softer saturation (rounder, smoother).");
     addAndMakeVisible (_labelSaturationShape);
-    _labelSaturationShape.setText ("SATURATION", juce::dontSendNotification);
-    _labelSaturationShape.setJustificationType (juce::Justification::centred);
-    _labelSaturationShape.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelSaturationShape.setText ("SATURATION", dontSendNotification);
+    _labelSaturationShape.setJustificationType (Justification::centred);
+    _labelSaturationShape.setColour (Label::textColourId, Colours::white);
 
     // Tube Sag slider setup
     addAndMakeVisible (_sliderTubeSag);
@@ -136,9 +138,9 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _sliderTubeSag.setLookAndFeel (&_sliderLookAndFeel);
     _sliderTubeSag.setTooltip ("Simulated power-supply sag. Turn up for more sag and a chewy, compressed attack (looser low end); turn down for a tighter, faster response.");
     addAndMakeVisible (_labelTubeSag);
-    _labelTubeSag.setText ("TUBE SAG", juce::dontSendNotification);
-    _labelTubeSag.setJustificationType (juce::Justification::centred);
-    _labelTubeSag.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelTubeSag.setText ("TUBE SAG", dontSendNotification);
+    _labelTubeSag.setJustificationType (Justification::centred);
+    _labelTubeSag.setColour (Label::textColourId, Colours::white);
 
     // New Tube Amp components setup
     // GAIN2 slider setup
@@ -147,9 +149,9 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _sliderGain2.setLookAndFeel (&_sliderLookAndFeel);
     _sliderGain2.setTooltip ("Second gain stage for tube amp saturation. Turn up for more drive and sustain.");
     addAndMakeVisible (_labelGain2);
-    _labelGain2.setText ("GAIN 2", juce::dontSendNotification);
-    _labelGain2.setJustificationType (juce::Justification::centred);
-    _labelGain2.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelGain2.setText ("GAIN 2", dontSendNotification);
+    _labelGain2.setJustificationType (Justification::centred);
+    _labelGain2.setColour (Label::textColourId, Colours::white);
 
     // GAIN3 slider setup
     addAndMakeVisible (_sliderGain3);
@@ -157,83 +159,140 @@ AmpPanel::AmpPanel (juce::AudioProcessorValueTreeState& apvts)
     _sliderGain3.setLookAndFeel (&_sliderLookAndFeel);
     _sliderGain3.setTooltip ("Third gain stage for tube amp saturation. Turn up for maximum drive and distortion.");
     addAndMakeVisible (_labelGain3);
-    _labelGain3.setText ("GAIN 3", juce::dontSendNotification);
-    _labelGain3.setJustificationType (juce::Justification::centred);
-    _labelGain3.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelGain3.setText ("GAIN 3", dontSendNotification);
+    _labelGain3.setJustificationType (Justification::centred);
+    _labelGain3.setColour (Label::textColourId, Colours::white);
 
     // BRIGHTNESS toggle setup
     addAndMakeVisible (_toggleBrightness);
     _toggleBrightness.setButtonText ("");
     _toggleBrightness.setTooltip ("Brightness cap switch. Turn on for brighter, more cutting tone.");
     addAndMakeVisible (_labelBrightness);
-    _labelBrightness.setText ("BRIGHT", juce::dontSendNotification);
-    _labelBrightness.setJustificationType (juce::Justification::centred);
-    _labelBrightness.setColour (juce::Label::textColourId, juce::Colours::white);
+    _labelBrightness.setText ("BRIGHT", dontSendNotification);
+    _labelBrightness.setJustificationType (Justification::centred);
+    _labelBrightness.setColour (Label::textColourId, Colours::white);
 
-    // TUBE_MODEL combo box setup
-    addAndMakeVisible (_comboTubeModel);
-    _comboTubeModel.addItem ("Soft (Tanh)", 1);
-    _comboTubeModel.addItem ("Medium (Arctan)", 2);
-    _comboTubeModel.addItem ("Hard (Cubic)", 3);
-    _comboTubeModel.addItem ("Asymmetric (Push-Pull)", 4);
-    _comboTubeModel.setTooltip ("Select tube saturation model for different distortion characteristics.");
-    addAndMakeVisible (_labelTubeModel);
-    _labelTubeModel.setText ("TUBE MODEL", juce::dontSendNotification);
-    _labelTubeModel.setJustificationType (juce::Justification::centred);
-    _labelTubeModel.setColour (juce::Label::textColourId, juce::Colours::white);
+
+    // Gain Stage 1 Type combo box setup
+    addAndMakeVisible (_comboGainStage1Type);
+    _comboGainStage1Type.clear();
+    _comboGainStage1Type.addSectionHeading("Classic Tube Amps");
+    _comboGainStage1Type.addItem("Fender 12AX7 (Clean)", 1);
+    _comboGainStage1Type.addItem("Marshall ECC83 (Crunch)", 2);
+    _comboGainStage1Type.addItem("Mesa 12AX7 (High Gain)", 3);
+    _comboGainStage1Type.addItem("Vox EF86 (Bright)", 4);
+    _comboGainStage1Type.addSeparator();
+    _comboGainStage1Type.addSectionHeading("Modern High Gain");
+    _comboGainStage1Type.addItem("Peavey 5150 (Lead)", 8);
+    _comboGainStage1Type.addItem("ENGL Savage (Modern)", 9);
+    _comboGainStage1Type.addItem("Diezel VH4 (Tight)", 10);
+    _comboGainStage1Type.setTooltip ("Select amp emulation for Gain Stage 1.");
+    addAndMakeVisible (_labelGainStage1Type);
+    _labelGainStage1Type.setText ("STAGE 1 TYPE", dontSendNotification);
+    _labelGainStage1Type.setJustificationType (Justification::centred);
+    _labelGainStage1Type.setColour (Label::textColourId, Colours::white);
+
+    // Gain Stage 2 Type combo box setup
+    addAndMakeVisible (_comboGainStage2Type);
+    _comboGainStage2Type.clear();
+    _comboGainStage2Type.addSectionHeading("Classic Tube Amps");
+    _comboGainStage2Type.addItem("Fender 12AX7 (Clean)", 1);
+    _comboGainStage2Type.addItem("Marshall ECC83 (Crunch)", 2);
+    _comboGainStage2Type.addItem("Mesa 12AX7 (High Gain)", 3);
+    _comboGainStage2Type.addItem("Vox EF86 (Bright)", 4);
+    _comboGainStage2Type.addSeparator();
+    _comboGainStage2Type.addSectionHeading("Modern High Gain");
+    _comboGainStage2Type.addItem("Peavey 5150 (Lead)", 8);
+    _comboGainStage2Type.addItem("ENGL Savage (Modern)", 9);
+    _comboGainStage2Type.addItem("Diezel VH4 (Tight)", 10);
+    _comboGainStage2Type.setTooltip ("Select amp emulation for Gain Stage 2.");
+    addAndMakeVisible (_labelGainStage2Type);
+    _labelGainStage2Type.setText ("STAGE 2 TYPE", dontSendNotification);
+    _labelGainStage2Type.setJustificationType (Justification::centred);
+    _labelGainStage2Type.setColour (Label::textColourId, Colours::white);
+
+    // Gain Stage 3 Type combo box setup
+    addAndMakeVisible (_comboGainStage3Type);
+    _comboGainStage3Type.clear();
+    _comboGainStage3Type.addSectionHeading("Classic Tube Amps");
+    _comboGainStage3Type.addItem("Fender 12AX7 (Clean)", 1);
+    _comboGainStage3Type.addItem("Marshall ECC83 (Crunch)", 2);
+    _comboGainStage3Type.addItem("Mesa 12AX7 (High Gain)", 3);
+    _comboGainStage3Type.addItem("Vox EF86 (Bright)", 4);
+    _comboGainStage3Type.addSeparator();
+    _comboGainStage3Type.addSectionHeading("Modern High Gain");
+    _comboGainStage3Type.addItem("Peavey 5150 (Lead)", 8);
+    _comboGainStage3Type.addItem("ENGL Savage (Modern)", 9);
+    _comboGainStage3Type.addItem("Diezel VH4 (Tight)", 10);
+    _comboGainStage3Type.setTooltip ("Select amp emulation for Gain Stage 3.");
+    addAndMakeVisible (_labelGainStage3Type);
+    _labelGainStage3Type.setText ("STAGE 3 TYPE", dontSendNotification);
+    _labelGainStage3Type.setJustificationType (Justification::centred);
+    _labelGainStage3Type.setColour (Label::textColourId, Colours::white);
 
     // Create parameter attachments
-    _sliderAttachmentInput = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+    _sliderAttachmentInput = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "INPUT", _sliderInput);
-    _sliderAttachmentPreGain = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+    _sliderAttachmentPreGain = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "GAIN1", _sliderPreGain);
-    _sliderAttachmentResonance = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+    _sliderAttachmentResonance = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "RESONANCE", _sliderResonance);
-    _sliderAttachmentDrive = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+    _sliderAttachmentDrive = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "DRIVE", _sliderDrive);
-    _sliderAttachmentAsymmetry = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+    _sliderAttachmentAsymmetry = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "ASYMMETRY", _sliderAsymmetry);
-    _sliderAttachmentHarmonicCharacter = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+    _sliderAttachmentHarmonicCharacter = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "HARMONIC_CHARACTER", _sliderHarmonicCharacter);
-    _sliderAttachmentSaturationShape = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+    _sliderAttachmentSaturationShape = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "SATURATION_SHAPE", _sliderSaturationShape);
-    _sliderAttachmentTubeSag = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+    _sliderAttachmentTubeSag = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "TUBE_SAG", _sliderTubeSag);
-    _sliderAttachmentBass = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+    _sliderAttachmentBass = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "BASS", _sliderBass);
-    _sliderAttachmentMid = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+    _sliderAttachmentMid = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "MID", _sliderMid);
-    _sliderAttachmentTreble = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+    _sliderAttachmentTreble = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "TREBLE", _sliderTreble);
-    _sliderAttachmentPresence = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+    _sliderAttachmentPresence = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "PRESENCE", _sliderPresence);
-    _sliderAttachmentPostGain = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+    _sliderAttachmentPostGain = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "POSTGAIN", _sliderPostGain);
         
     // New parameter attachments
-    _sliderAttachmentGain2 = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+    _sliderAttachmentGain2 = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "GAIN2", _sliderGain2);
-    _sliderAttachmentGain3 = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
+    _sliderAttachmentGain3 = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
         apvts, "GAIN3", _sliderGain3);
-    _toggleAttachmentBrightness = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment> (
+    _toggleAttachmentBrightness = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (
         apvts, "BRIGHTNESS", _toggleBrightness);
-    _comboAttachmentTubeModel = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment> (
-        apvts, "TUBE_MODEL", _comboTubeModel);
+        
+    // Gain Stage Type parameter attachments
+    _comboAttachmentGainStage1Type = std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment> (
+        apvts, "GAIN_STAGE_1_TYPE", _comboGainStage1Type);
+    _comboAttachmentGainStage2Type = std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment> (
+        apvts, "GAIN_STAGE_2_TYPE", _comboGainStage2Type);
+    _comboAttachmentGainStage3Type = std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment> (
+        apvts, "GAIN_STAGE_3_TYPE", _comboGainStage3Type);
+        
+    // Set up double-click callbacks for gain stage bypass
+    _sliderPreGain.onDoubleClickCallback = [this]() { onGain1DoubleClick(); };
+    _sliderGain2.onDoubleClickCallback = [this]() { onGain2DoubleClick(); };
+    _sliderGain3.onDoubleClickCallback = [this]() { onGain3DoubleClick(); };
 }
 
 AmpPanel::~AmpPanel() = default;
 
-void AmpPanel::setSliderProperties (juce::Slider* sliderToSet)
+void AmpPanel::setSliderProperties (Slider* sliderToSet)
 {
-    sliderToSet->setSliderStyle (juce::Slider::SliderStyle::RotaryVerticalDrag);
-    sliderToSet->setTextBoxStyle (juce::Slider::NoTextBox, false, 76, 38);
+    sliderToSet->setSliderStyle (Slider::SliderStyle::RotaryVerticalDrag);
+    sliderToSet->setTextBoxStyle (Slider::NoTextBox, false, 76, 38);
     sliderToSet->setDoubleClickReturnValue (true, 0.0f);
 }
 
-void AmpPanel::paint (juce::Graphics& g)
+void AmpPanel::paint (Graphics& g)
 {
     // Transparent to inherit parent
-    g.fillAll (juce::Colours::transparentBlack);
+    g.fillAll (Colours::transparentBlack);
 
     // Draw the amp face image if available
     if (_ampFaceImage.isValid())
@@ -244,7 +303,7 @@ void AmpPanel::paint (juce::Graphics& g)
             // Always draw scaled to current area without pre-resizing the source
             g.drawImage (_ampFaceImage,
                 _ampImageArea.toFloat(),
-                juce::RectanglePlacement::stretchToFit);
+                RectanglePlacement::stretchToFit);
         }
         _knobArea = _ampImageArea;
         _knobArea.removeFromTop (_knobArea.getHeight() * 6 / 10); // keep lower 40%
@@ -266,7 +325,7 @@ void AmpPanel::resized()
         const float imageAspect = imgW / imgH;
         const float targetAspect = targetW / targetH;
 
-        juce::Rectangle<float> area = bounds.toFloat();
+        Rectangle<float> area = bounds.toFloat();
         if (targetAspect > imageAspect)
         {
             float w = targetH * imageAspect;
@@ -313,13 +372,13 @@ void AmpPanel::resized()
 
     // Horizontal spacing for each row - updated for new controls
     const int row1KnobCount = 10; // INPUT, GAIN1, GAIN2, GAIN3, BASS, MID, TREBLE, PRESENCE, BRIGHTNESS, POST GAIN
-    const int row1Spacing = juce::jmax (4, (row1.getWidth() - row1KnobCount * sliderWidth) / (row1KnobCount + 1));
+    const int row1Spacing = jmax (4, (row1.getWidth() - row1KnobCount * sliderWidth) / (row1KnobCount + 1));
 
-    const int row2KnobCount = 1;
+    const int row2KnobCount = 3;
     const float secondRowScale = 1.0f;
-    const int row2SliderWidth = juce::roundToInt (sliderWidth * secondRowScale);
-    const int row2SliderHeight = juce::roundToInt (sliderHeight * secondRowScale);
-    const int row2Spacing = juce::jmax (row2KnobCount, (row2.getWidth() - row2KnobCount * row2SliderWidth) / (row2KnobCount + 1));
+    const int row2SliderWidth = roundToInt (sliderWidth * secondRowScale);
+    const int row2SliderHeight = roundToInt (sliderHeight * secondRowScale);
+    const int row2Spacing = jmax (6, (row2.getWidth() - row2KnobCount * row2SliderWidth) / (row2KnobCount + 1));
 
     const int topRowY = row1.getY();
     const int topLabelsY = topRowY + sliderHeight + labelGap;
@@ -334,7 +393,7 @@ void AmpPanel::resized()
 
     _sliderPreGain.setBounds (x, topRowY, sliderWidth, sliderHeight);
     _labelPreGain.setBounds (x, topLabelsY, sliderWidth, labelHeight);
-    _labelPreGain.setText ("GAIN 1", juce::dontSendNotification); // Update label to reflect GAIN1
+    _labelPreGain.setText ("GAIN 1", dontSendNotification); // Update label to reflect GAIN1
     x += sliderWidth + row1Spacing;
 
     _sliderGain2.setBounds (x, topRowY, sliderWidth, sliderHeight);
@@ -368,11 +427,115 @@ void AmpPanel::resized()
     _sliderPostGain.setBounds (x, topRowY, sliderWidth, sliderHeight);
     _labelPostGain.setBounds (x, topLabelsY, sliderWidth, labelHeight);
 
-    // Row 2 - TUBE_MODEL dropdown
+    // Row 2 - Gain Stage Type dropdowns
     int x2 = row2.getX() + row2Spacing;
-    const int comboBoxWidth = 180;
     const int comboBoxHeight = 25;
+    const int comboSpacing = 20;
     
-    _comboTubeModel.setBounds (x2, bottomRowY + 30, comboBoxWidth, comboBoxHeight);
-    _labelTubeModel.setBounds (x2, bottomLabelsY, comboBoxWidth, labelHeight);
+    // Gain Stage Type combo boxes
+    const int stageComboWidth = 200;
+    
+    _comboGainStage1Type.setBounds (x2, bottomRowY + 30, stageComboWidth, comboBoxHeight);
+    _labelGainStage1Type.setBounds (x2, bottomLabelsY, stageComboWidth, labelHeight);
+    x2 += stageComboWidth + comboSpacing;
+    
+    _comboGainStage2Type.setBounds (x2, bottomRowY + 30, stageComboWidth, comboBoxHeight);
+    _labelGainStage2Type.setBounds (x2, bottomLabelsY, stageComboWidth, labelHeight);
+    x2 += stageComboWidth + comboSpacing;
+    
+    _comboGainStage3Type.setBounds (x2, bottomRowY + 30, stageComboWidth, comboBoxHeight);
+    _labelGainStage3Type.setBounds (x2, bottomLabelsY, stageComboWidth, labelHeight);
+}
+
+//==============================================================================
+// Double-click callback implementations for gain stage bypass
+//==============================================================================
+
+void AmpPanel::onGain1DoubleClick()
+{
+    if (auto* bypassParam = _apvts.getParameter("GAIN1_BYPASS"))
+    {
+        float currentValue = bypassParam->getValue();
+        float newValue = currentValue > 0.5f ? 0.0f : 1.0f;
+        bypassParam->setValueNotifyingHost(newValue);
+        if (newValue > 0.5f)
+        {
+            // Stage is BYPASSED - disable and grey out
+            _sliderPreGain.setEnabled(false);
+            _sliderPreGain.setColour(Slider::thumbColourId, Colours::grey);
+            _sliderPreGain.setColour(Slider::rotarySliderFillColourId, Colours::darkgrey);
+            _labelPreGain.setColour(Label::textColourId, Colours::grey);
+        }
+        else
+        {
+            // Stage is ACTIVE - enable and restore colors
+            _sliderPreGain.setEnabled(true);
+            // Clear color overrides to restore LookAndFeel defaults
+            _sliderPreGain.removeColour(Slider::thumbColourId);
+            _sliderPreGain.removeColour(Slider::rotarySliderFillColourId);
+            _labelPreGain.setColour(Label::textColourId, Colours::white);
+        }
+
+        // Force visual update
+        _sliderPreGain.repaint();
+        _labelPreGain.repaint();
+    }
+}
+
+void AmpPanel::onGain2DoubleClick()
+{
+    if (auto* bypassParam = _apvts.getParameter("GAIN2_BYPASS"))
+    {
+        float currentValue = bypassParam->getValue();
+        float newValue = currentValue > 0.5f ? 0.0f : 1.0f;
+        bypassParam->setValueNotifyingHost(newValue);
+        if (newValue > 0.5f)
+        {
+            // Stage is BYPASSED
+            _sliderGain2.setEnabled(false);
+            _sliderGain2.setColour(Slider::thumbColourId, Colours::grey);
+            _sliderGain2.setColour(Slider::rotarySliderFillColourId, Colours::darkgrey);
+            _labelGain2.setColour(Label::textColourId, Colours::grey);
+        }
+        else
+        {
+            // Stage is ACTIVE
+            _sliderGain2.setEnabled(true);
+            _sliderGain2.removeColour(Slider::thumbColourId);
+            _sliderGain2.removeColour(Slider::rotarySliderFillColourId);
+            _labelGain2.setColour(Label::textColourId, Colours::white);
+        }
+
+        _sliderGain2.repaint();
+        _labelGain2.repaint();
+    }
+}
+
+void AmpPanel::onGain3DoubleClick()
+{
+    if (auto* bypassParam = _apvts.getParameter("GAIN3_BYPASS"))
+    {
+        float currentValue = bypassParam->getValue();
+        float newValue = currentValue > 0.5f ? 0.0f : 1.0f;
+        bypassParam->setValueNotifyingHost(newValue);
+        if (newValue > 0.5f)
+        {
+            // Stage is BYPASSED
+            _sliderGain3.setEnabled(false);
+            _sliderGain3.setColour(Slider::thumbColourId, Colours::grey);
+            _sliderGain3.setColour(Slider::rotarySliderFillColourId, Colours::darkgrey);
+            _labelGain3.setColour(Label::textColourId, Colours::grey);
+        }
+        else
+        {
+            // Stage is ACTIVE
+            _sliderGain3.setEnabled(true);
+            _sliderGain3.removeColour(Slider::thumbColourId);
+            _sliderGain3.removeColour(Slider::rotarySliderFillColourId);
+            _labelGain3.setColour(Label::textColourId, Colours::white);
+        }
+
+        _sliderGain3.repaint();
+        _labelGain3.repaint();
+    }
 }

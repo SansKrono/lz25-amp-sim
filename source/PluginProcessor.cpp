@@ -153,6 +153,344 @@ void LZ25AudioProcessor::updateProcessorChain()
     *bassFilter.state = *juce::dsp::IIR::Coefficients<float>::makePeakFilter ((float) sr, 100.0f, 0.6f, 1.0f);
 }
 
+//==============================================================================
+// Gain Stage Configuration Implementation
+//==============================================================================
+GainStageConfig GainStageConfig::createConfig(GainStageType type)
+{
+    GainStageConfig cfg;
+
+    switch (type)
+    {
+        case GainStageType::Fender_12AX7_Clean:
+            cfg.gainFactor = 1.2f;
+            cfg.saturationCurve = 0.8f;
+            cfg.asymmetry = 0.1f;
+            cfg.compressionRatio = 1.5f;
+            cfg.harmonicContent = 0.7f; // More even harmonics
+            cfg.couplingCapFreq = 90.0f;
+            cfg.gridStopperFreq = 12000.0f;
+            cfg.millerCapacitance = 0.3f;
+            cfg.biasPoint = 0.0f;
+            cfg.biasShift = 0.1f;
+            cfg.plateResistance = 1.0f;
+            cfg.sag = 0.1f;
+            break;
+
+        case GainStageType::Marshall_ECC83_Crunch:
+            cfg.gainFactor = 1.8f;
+            cfg.saturationCurve = 1.5f;
+            cfg.asymmetry = 0.3f;
+            cfg.compressionRatio = 2.5f;
+            cfg.harmonicContent = 0.4f; // Balanced harmonics
+            cfg.couplingCapFreq = 80.0f;
+            cfg.gridStopperFreq = 8000.0f;
+            cfg.millerCapacitance = 0.5f;
+            cfg.biasPoint = -0.1f;
+            cfg.biasShift = 0.3f;
+            cfg.plateResistance = 1.2f;
+            cfg.sag = 0.2f;
+            break;
+
+        case GainStageType::Mesa_12AX7_HighGain:
+            cfg.gainFactor = 2.5f;
+            cfg.saturationCurve = 2.2f;
+            cfg.asymmetry = 0.2f;
+            cfg.compressionRatio = 4.0f;
+            cfg.harmonicContent = 0.3f; // More odd harmonics
+            cfg.couplingCapFreq = 70.0f;
+            cfg.gridStopperFreq = 6000.0f;
+            cfg.millerCapacitance = 0.6f;
+            cfg.biasPoint = -0.15f;
+            cfg.biasShift = 0.4f;
+            cfg.plateResistance = 1.3f;
+            cfg.sag = 0.15f;
+            break;
+
+        case GainStageType::Vox_EF86_Bright:
+            cfg.gainFactor = 1.5f;
+            cfg.saturationCurve = 1.0f;
+            cfg.asymmetry = 0.15f;
+            cfg.compressionRatio = 1.8f;
+            cfg.harmonicContent = 0.8f; // Very warm
+            cfg.couplingCapFreq = 100.0f;
+            cfg.gridStopperFreq = 15000.0f;
+            cfg.millerCapacitance = 0.2f;
+            cfg.biasPoint = 0.05f;
+            cfg.biasShift = 0.2f;
+            cfg.plateResistance = 0.9f;
+            cfg.sag = 0.25f; // Vox is known for sag
+            break;
+
+        case GainStageType::RCA_12AY7_Vintage:
+            cfg.gainFactor = 0.9f; // Lower mu tube
+            cfg.saturationCurve = 0.6f;
+            cfg.asymmetry = 0.05f;
+            cfg.compressionRatio = 1.3f;
+            cfg.harmonicContent = 0.85f; // Very warm vintage
+            cfg.couplingCapFreq = 120.0f;
+            cfg.gridStopperFreq = 10000.0f;
+            cfg.millerCapacitance = 0.4f;
+            cfg.biasPoint = 0.0f;
+            cfg.biasShift = 0.05f;
+            cfg.plateResistance = 0.8f;
+            cfg.sag = 0.3f;
+            break;
+
+        case GainStageType::GE_12AU7_Jazz:
+            cfg.gainFactor = 0.7f; // Very low mu
+            cfg.saturationCurve = 0.5f;
+            cfg.asymmetry = 0.02f;
+            cfg.compressionRatio = 1.2f;
+            cfg.harmonicContent = 0.9f; // Ultra clean
+            cfg.couplingCapFreq = 130.0f;
+            cfg.gridStopperFreq = 16000.0f;
+            cfg.millerCapacitance = 0.1f;
+            cfg.biasPoint = 0.02f;
+            cfg.biasShift = 0.03f;
+            cfg.plateResistance = 0.7f;
+            cfg.sag = 0.05f;
+            break;
+
+        case GainStageType::Mullard_ECC83_British:
+            cfg.gainFactor = 1.7f;
+            cfg.saturationCurve = 1.3f;
+            cfg.asymmetry = 0.25f;
+            cfg.compressionRatio = 2.2f;
+            cfg.harmonicContent = 0.6f;
+            cfg.couplingCapFreq = 85.0f;
+            cfg.gridStopperFreq = 9000.0f;
+            cfg.millerCapacitance = 0.45f;
+            cfg.biasPoint = -0.05f;
+            cfg.biasShift = 0.25f;
+            cfg.plateResistance = 1.1f;
+            cfg.sag = 0.18f;
+            break;
+
+        case GainStageType::Peavey_5150_Lead:
+            cfg.gainFactor = 3.0f;
+            cfg.saturationCurve = 2.8f;
+            cfg.asymmetry = 0.35f;
+            cfg.compressionRatio = 6.0f;
+            cfg.harmonicContent = 0.2f; // Aggressive
+            cfg.couplingCapFreq = 60.0f;
+            cfg.gridStopperFreq = 5000.0f;
+            cfg.millerCapacitance = 0.7f;
+            cfg.biasPoint = -0.2f;
+            cfg.biasShift = 0.5f;
+            cfg.plateResistance = 1.5f;
+            cfg.sag = 0.1f; // Tight, not saggy
+            break;
+
+        case GainStageType::Engl_Savage_Modern:
+            cfg.gainFactor = 2.8f;
+            cfg.saturationCurve = 2.5f;
+            cfg.asymmetry = 0.3f;
+            cfg.compressionRatio = 5.0f;
+            cfg.harmonicContent = 0.25f;
+            cfg.couplingCapFreq = 65.0f;
+            cfg.gridStopperFreq = 5500.0f;
+            cfg.millerCapacitance = 0.65f;
+            cfg.biasPoint = -0.18f;
+            cfg.biasShift = 0.45f;
+            cfg.plateResistance = 1.4f;
+            cfg.sag = 0.08f; // Very tight
+            break;
+
+        case GainStageType::Diezel_VH4_Tight:
+            cfg.gainFactor = 2.6f;
+            cfg.saturationCurve = 2.3f;
+            cfg.asymmetry = 0.25f;
+            cfg.compressionRatio = 4.5f;
+            cfg.harmonicContent = 0.3f;
+            cfg.couplingCapFreq = 75.0f;
+            cfg.gridStopperFreq = 6500.0f;
+            cfg.millerCapacitance = 0.6f;
+            cfg.biasPoint = -0.12f;
+            cfg.biasShift = 0.35f;
+            cfg.plateResistance = 1.35f;
+            cfg.sag = 0.05f; // Ultra tight
+            break;
+
+        case GainStageType::Dumble_ODS_Smooth:
+            cfg.gainFactor = 1.6f;
+            cfg.saturationCurve = 1.2f;
+            cfg.asymmetry = 0.2f;
+            cfg.compressionRatio = 3.0f;
+            cfg.harmonicContent = 0.75f; // Smooth & musical
+            cfg.couplingCapFreq = 95.0f;
+            cfg.gridStopperFreq = 11000.0f;
+            cfg.millerCapacitance = 0.35f;
+            cfg.biasPoint = 0.0f;
+            cfg.biasShift = 0.2f;
+            cfg.plateResistance = 1.05f;
+            cfg.sag = 0.22f;
+            break;
+
+        case GainStageType::Soldano_SLO_Cascade:
+            cfg.gainFactor = 2.4f;
+            cfg.saturationCurve = 2.0f;
+            cfg.asymmetry = 0.4f; // Pronounced push-pull
+            cfg.compressionRatio = 3.5f;
+            cfg.harmonicContent = 0.35f;
+            cfg.couplingCapFreq = 72.0f;
+            cfg.gridStopperFreq = 7000.0f;
+            cfg.millerCapacitance = 0.55f;
+            cfg.biasPoint = -0.14f;
+            cfg.biasShift = 0.38f;
+            cfg.plateResistance = 1.25f;
+            cfg.sag = 0.16f;
+            break;
+
+        case GainStageType::Bogner_Ecstasy_Warm:
+            cfg.gainFactor = 2.0f;
+            cfg.saturationCurve = 1.7f;
+            cfg.asymmetry = 0.22f;
+            cfg.compressionRatio = 2.8f;
+            cfg.harmonicContent = 0.65f; // Warm & rich
+            cfg.couplingCapFreq = 88.0f;
+            cfg.gridStopperFreq = 9500.0f;
+            cfg.millerCapacitance = 0.4f;
+            cfg.biasPoint = -0.08f;
+            cfg.biasShift = 0.28f;
+            cfg.plateResistance = 1.15f;
+            cfg.sag = 0.19f;
+            break;
+
+        case GainStageType::RolandJC_FET_Clean:
+            cfg.gainFactor = 1.0f;
+            cfg.saturationCurve = 0.4f; // Very linear
+            cfg.asymmetry = 0.0f; // Symmetric FET
+            cfg.compressionRatio = 1.1f;
+            cfg.harmonicContent = 0.95f; // Ultra clean
+            cfg.couplingCapFreq = 150.0f;
+            cfg.gridStopperFreq = 20000.0f;
+            cfg.millerCapacitance = 0.05f;
+            cfg.biasPoint = 0.0f;
+            cfg.biasShift = 0.0f;
+            cfg.plateResistance = 0.9f;
+            cfg.sag = 0.0f; // Solid state
+            break;
+
+        case GainStageType::Sunn_Transistor_Heavy:
+            cfg.gainFactor = 2.2f;
+            cfg.saturationCurve = 2.6f; // Hard clipping
+            cfg.asymmetry = 0.1f; // Slight
+            cfg.compressionRatio = 2.0f;
+            cfg.harmonicContent = 0.15f; // Harsh transistor
+            cfg.couplingCapFreq = 55.0f;
+            cfg.gridStopperFreq = 8000.0f;
+            cfg.millerCapacitance = 0.3f;
+            cfg.biasPoint = 0.0f;
+            cfg.biasShift = 0.1f;
+            cfg.plateResistance = 1.6f;
+            cfg.sag = 0.0f;
+            break;
+
+        case GainStageType::Hughes_Kettner_Tube_SS:
+            cfg.gainFactor = 1.9f;
+            cfg.saturationCurve = 1.6f;
+            cfg.asymmetry = 0.18f;
+            cfg.compressionRatio = 2.3f;
+            cfg.harmonicContent = 0.5f; // Balanced hybrid
+            cfg.couplingCapFreq = 82.0f;
+            cfg.gridStopperFreq = 10000.0f;
+            cfg.millerCapacitance = 0.42f;
+            cfg.biasPoint = -0.06f;
+            cfg.biasShift = 0.22f;
+            cfg.plateResistance = 1.12f;
+            cfg.sag = 0.12f;
+            break;
+
+        default:
+            // Default to Marshall characteristics
+            return createConfig(GainStageType::Marshall_ECC83_Crunch);
+    }
+
+    return cfg;
+}
+
+//==============================================================================
+// Helper function to get stage type names for UI
+//==============================================================================
+juce::String getGainStageTypeName(GainStageType type)
+{
+    switch (type)
+    {
+        case GainStageType::Fender_12AX7_Clean:        return "Fender 12AX7 (Clean)";
+        case GainStageType::Marshall_ECC83_Crunch:     return "Marshall ECC83 (Crunch)";
+        case GainStageType::Mesa_12AX7_HighGain:       return "Mesa 12AX7 (High Gain)";
+        case GainStageType::Vox_EF86_Bright:           return "Vox EF86 (Bright)";
+        case GainStageType::RCA_12AY7_Vintage:         return "RCA 12AY7 (Vintage)";
+        case GainStageType::GE_12AU7_Jazz:             return "GE 12AU7 (Jazz/Clean)";
+        case GainStageType::Mullard_ECC83_British:     return "Mullard ECC83 (British)";
+        case GainStageType::Peavey_5150_Lead:          return "Peavey 5150 (Lead)";
+        case GainStageType::Engl_Savage_Modern:        return "ENGL Savage (Modern)";
+        case GainStageType::Diezel_VH4_Tight:          return "Diezel VH4 (Tight)";
+        case GainStageType::Dumble_ODS_Smooth:         return "Dumble ODS (Smooth)";
+        case GainStageType::Soldano_SLO_Cascade:       return "Soldano SLO-100 (Cascade)";
+        case GainStageType::Bogner_Ecstasy_Warm:       return "Bogner Ecstasy (Warm)";
+        case GainStageType::RolandJC_FET_Clean:        return "Roland JC-120 FET (Clean)";
+        case GainStageType::Sunn_Transistor_Heavy:     return "Sunn Model T (Heavy)";
+        case GainStageType::Hughes_Kettner_Tube_SS:    return "Hughes & Kettner (Hybrid)";
+        default:                                        return "Unknown";
+    }
+}
+
+//==============================================================================
+// Helper to populate ComboBox with all stage types
+//==============================================================================
+void populateGainStageComboBox(juce::ComboBox& comboBox)
+{
+    comboBox.clear();
+
+    comboBox.addSectionHeading("Classic Tube Amps");
+    comboBox.addItem(getGainStageTypeName(GainStageType::Fender_12AX7_Clean),
+                     static_cast<int>(GainStageType::Fender_12AX7_Clean) + 1);
+    comboBox.addItem(getGainStageTypeName(GainStageType::Marshall_ECC83_Crunch),
+                     static_cast<int>(GainStageType::Marshall_ECC83_Crunch) + 1);
+    comboBox.addItem(getGainStageTypeName(GainStageType::Mesa_12AX7_HighGain),
+                     static_cast<int>(GainStageType::Mesa_12AX7_HighGain) + 1);
+    comboBox.addItem(getGainStageTypeName(GainStageType::Vox_EF86_Bright),
+                     static_cast<int>(GainStageType::Vox_EF86_Bright) + 1);
+
+    comboBox.addSeparator();
+    comboBox.addSectionHeading("Vintage Tubes");
+    comboBox.addItem(getGainStageTypeName(GainStageType::RCA_12AY7_Vintage),
+                     static_cast<int>(GainStageType::RCA_12AY7_Vintage) + 1);
+    comboBox.addItem(getGainStageTypeName(GainStageType::GE_12AU7_Jazz),
+                     static_cast<int>(GainStageType::GE_12AU7_Jazz) + 1);
+    comboBox.addItem(getGainStageTypeName(GainStageType::Mullard_ECC83_British),
+                     static_cast<int>(GainStageType::Mullard_ECC83_British) + 1);
+
+    comboBox.addSeparator();
+    comboBox.addSectionHeading("Modern High Gain");
+    comboBox.addItem(getGainStageTypeName(GainStageType::Peavey_5150_Lead),
+                     static_cast<int>(GainStageType::Peavey_5150_Lead) + 1);
+    comboBox.addItem(getGainStageTypeName(GainStageType::Engl_Savage_Modern),
+                     static_cast<int>(GainStageType::Engl_Savage_Modern) + 1);
+    comboBox.addItem(getGainStageTypeName(GainStageType::Diezel_VH4_Tight),
+                     static_cast<int>(GainStageType::Diezel_VH4_Tight) + 1);
+
+    comboBox.addSeparator();
+    comboBox.addSectionHeading("Boutique/Specialty");
+    comboBox.addItem(getGainStageTypeName(GainStageType::Dumble_ODS_Smooth),
+                     static_cast<int>(GainStageType::Dumble_ODS_Smooth) + 1);
+    comboBox.addItem(getGainStageTypeName(GainStageType::Soldano_SLO_Cascade),
+                     static_cast<int>(GainStageType::Soldano_SLO_Cascade) + 1);
+    comboBox.addItem(getGainStageTypeName(GainStageType::Bogner_Ecstasy_Warm),
+                     static_cast<int>(GainStageType::Bogner_Ecstasy_Warm) + 1);
+
+    comboBox.addSeparator();
+    comboBox.addSectionHeading("Solid State & Hybrid");
+    comboBox.addItem(getGainStageTypeName(GainStageType::RolandJC_FET_Clean),
+                     static_cast<int>(GainStageType::RolandJC_FET_Clean) + 1);
+    comboBox.addItem(getGainStageTypeName(GainStageType::Sunn_Transistor_Heavy),
+                     static_cast<int>(GainStageType::Sunn_Transistor_Heavy) + 1);
+    comboBox.addItem(getGainStageTypeName(GainStageType::Hughes_Kettner_Tube_SS),
+                     static_cast<int>(GainStageType::Hughes_Kettner_Tube_SS) + 1);
+}
+
 
 void LZ25AudioProcessor::setIRFolder (const juce::File& dir)
 {
@@ -272,8 +610,37 @@ juce::AudioProcessorValueTreeState::ParameterLayout LZ25AudioProcessor::createPa
     parameters.push_back (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { "GAIN1", 1 }, "Gain 1", 0.0f, 1.0f, 0.6f));
     parameters.push_back (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { "GAIN2", 1 }, "Gain 2", 0.0f, 1.0f, 0.6f));
     parameters.push_back (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { "GAIN3", 1 }, "Gain 3", 0.0f, 1.0f, 0.5f));
-    parameters.push_back (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { "TUBE_MODEL", 1 }, "Tube Model", juce::StringArray { "Soft (Tanh)", "Medium (Arctan)", "Hard (Cubic)", "Asymmetric (Push-Pull)" }, 0));
     parameters.push_back (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "BRIGHTNESS", 1 }, "Bright", false));
+    
+    // Gain Stage Bypass Parameters (for double-click functionality)
+    parameters.push_back (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "GAIN1_BYPASS", 1 }, "Gain 1 Bypass", false));
+    parameters.push_back (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "GAIN2_BYPASS", 1 }, "Gain 2 Bypass", false));
+    parameters.push_back (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "GAIN3_BYPASS", 1 }, "Gain 3 Bypass", false));
+
+    // Gain Stage Type Parameters - Allow selection of different amp emulations for each stage
+    juce::StringArray gainStageChoices;
+    for (int i = 0; i < static_cast<int>(GainStageType::NumTypes); ++i)
+    {
+        gainStageChoices.add(getGainStageTypeName(static_cast<GainStageType>(i)));
+    }
+    
+    parameters.push_back (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { "GAIN_STAGE_1_TYPE", 1 }, 
+        "Gain Stage 1 Type", 
+        gainStageChoices, 
+        static_cast<int>(GainStageType::Marshall_ECC83_Crunch)));
+        
+    parameters.push_back (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { "GAIN_STAGE_2_TYPE", 1 }, 
+        "Gain Stage 2 Type", 
+        gainStageChoices, 
+        static_cast<int>(GainStageType::Marshall_ECC83_Crunch)));
+        
+    parameters.push_back (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { "GAIN_STAGE_3_TYPE", 1 }, 
+        "Gain Stage 3 Type", 
+        gainStageChoices, 
+        static_cast<int>(GainStageType::Marshall_ECC83_Crunch)));
 
     // IR Enable parameter
     parameters.push_back (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "IR_ENABLE", 1 }, "IR Enable", true));
@@ -675,6 +1042,15 @@ void LZ25AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         if (numSamples == 0)
             return;
 
+        // Update gain stage types based on parameter selection
+        const int stage1TypeIndex = static_cast<int>(*apvts.getRawParameterValue ("GAIN_STAGE_1_TYPE"));
+        const int stage2TypeIndex = static_cast<int>(*apvts.getRawParameterValue ("GAIN_STAGE_2_TYPE"));
+        const int stage3TypeIndex = static_cast<int>(*apvts.getRawParameterValue ("GAIN_STAGE_3_TYPE"));
+
+        gainStage1.setStageType(static_cast<GainStageType>(stage1TypeIndex));
+        gainStage2.setStageType(static_cast<GainStageType>(stage2TypeIndex));
+        gainStage3.setStageType(static_cast<GainStageType>(stage3TypeIndex));
+
         // Read current parameter values and set targets for smoothing
         const float g1 = juce::jlimit (0.0f, 4.0f, *apvts.getRawParameterValue ("GAIN1") * 4.0f);
         const float g2 = juce::jlimit (0.0f, 4.0f, *apvts.getRawParameterValue ("GAIN2") * 4.0f);
@@ -689,14 +1065,15 @@ void LZ25AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         toneStack.setTreble (*apvts.getRawParameterValue ("TREBLE"));
         toneStack.setPresence (*apvts.getRawParameterValue ("PRESENCE"));
 
-        const int tubeIndex = static_cast<int>(*apvts.getRawParameterValue ("TUBE_MODEL"));
-        gainStage1.setTubeModel (tubeIndex);
-        gainStage2.setTubeModel (tubeIndex);
-        gainStage3.setTubeModel (tubeIndex);
 
         masterGainSmooth.setTargetValue (juce::jlimit (0.0f, 1.5f, *apvts.getRawParameterValue ("POSTGAIN") * 0.1f + 1.0f));
 
         const bool brightOn = *apvts.getRawParameterValue ("BRIGHTNESS") > 0.5f;
+        
+        // Read bypass states for gain stages
+        const bool gain1Bypassed = *apvts.getRawParameterValue ("GAIN1_BYPASS") > 0.5f;
+        const bool gain2Bypassed = *apvts.getRawParameterValue ("GAIN2_BYPASS") > 0.5f;
+        const bool gain3Bypassed = *apvts.getRawParameterValue ("GAIN3_BYPASS") > 0.5f;
 
         // Choose input channel: if multiple channels, pick the one with higher RMS
         int inChan = 0;
@@ -724,9 +1101,13 @@ void LZ25AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
             if (brightOn)
                 x = brightCap.processSample (x);
 
-            x = gainStage1.processSample (x);
-            x = gainStage2.processSample (x);
-            x = gainStage3.processSample (x);
+            // Gain stage processing with bypass functionality
+            if (!gain1Bypassed)
+                x = gainStage1.processSample (x);
+            if (!gain2Bypassed)
+                x = gainStage2.processSample (x);
+            if (!gain3Bypassed)
+                x = gainStage3.processSample (x);
 
             x = toneStack.processSample (x);
 
