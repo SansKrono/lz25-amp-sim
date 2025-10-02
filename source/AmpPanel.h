@@ -96,15 +96,9 @@ private:
     juce::Label _labelBrightness;
     
     
-    // Gain Stage Type Selectors
-    juce::ComboBox _comboGainStage1Type;
-    juce::Label _labelGainStage1Type;
-    
-    juce::ComboBox _comboGainStage2Type;
-    juce::Label _labelGainStage2Type;
-    
-    juce::ComboBox _comboGainStage3Type;
-    juce::Label _labelGainStage3Type;
+    // Amp Style Preset Selector
+    juce::ComboBox _comboAmpStyle;
+    juce::Label _labelAmpStyle;
 
     // Parameter attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _sliderAttachmentInput;
@@ -126,10 +120,8 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _sliderAttachmentGain3;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> _toggleAttachmentBrightness;
     
-    // Gain Stage Type parameter attachments
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> _comboAttachmentGainStage1Type;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> _comboAttachmentGainStage2Type;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> _comboAttachmentGainStage3Type;
+    // Amp Style parameter attachment
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> _comboAttachmentAmpStyle;
 
     // Look and feel
     MXRLookAndFeel _sliderLookAndFeel;

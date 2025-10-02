@@ -617,7 +617,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout LZ25AudioProcessor::createPa
     parameters.push_back (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "GAIN2_BYPASS", 1 }, "Gain 2 Bypass", false));
     parameters.push_back (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "GAIN3_BYPASS", 1 }, "Gain 3 Bypass", false));
 
-    // Gain Stage Type Parameters - Allow selection of different amp emulations for each stage
+    // Amp Style Preset Parameter - Replaces individual gain stage type selections
+    parameters.push_back (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { "AMP_STYLE", 1 },
+        "Amp Style",
+        juce::StringArray { "Marshall Plexi", "Mesa Dual Rectifier", "Fender Clean", "Peavey 5150", "Dumble ODS", 
+                           "Vox AC30", "Soldano Cascade", "Vintage Jazz Clean", "Modern Metal Stack", "Hybrid Warmth" },
+        0)); // Default to Marshall Plexi
+    
+    // Keep individual gain stage type parameters for internal use (hidden from UI)
     juce::StringArray gainStageChoices;
     for (int i = 0; i < static_cast<int>(GainStageType::NumTypes); ++i)
     {
@@ -844,6 +852,204 @@ bool LZ25AudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) con
 }
 #endif
 
+// ============================================================================
+// Amp Style Preset Functions
+// ============================================================================
+
+void setMarshallPlexi(LZ25AudioProcessor& processor)
+{
+    // Bright input channel configuration
+    processor.apvts.getParameter("GAIN_STAGE_1_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Marshall_ECC83_Crunch) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_2_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Marshall_ECC83_Crunch) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_3_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Mullard_ECC83_British) /
+                                static_cast<float>(GainStageType::NumTypes));
+
+    // Moderate gain settings
+    processor.apvts.getParameter("GAIN1")->setValueNotifyingHost(0.4f); // ~6
+    processor.apvts.getParameter("GAIN2")->setValueNotifyingHost(0.35f); // ~5
+    processor.apvts.getParameter("GAIN3")->setValueNotifyingHost(0.3f); // ~4
+}
+
+void setMesaDualRectifier(LZ25AudioProcessor& processor)
+{
+    // Modern high gain configuration
+    processor.apvts.getParameter("GAIN_STAGE_1_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Mesa_12AX7_HighGain) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_2_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Mesa_12AX7_HighGain) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_3_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Diezel_VH4_Tight) /
+                                static_cast<float>(GainStageType::NumTypes));
+
+    // High gain settings
+    processor.apvts.getParameter("GAIN1")->setValueNotifyingHost(0.65f); // ~12
+    processor.apvts.getParameter("GAIN2")->setValueNotifyingHost(0.6f); // ~10
+    processor.apvts.getParameter("GAIN3")->setValueNotifyingHost(0.55f); // ~8
+}
+
+void setFenderClean(LZ25AudioProcessor& processor)
+{
+    // Classic clean tone
+    processor.apvts.getParameter("GAIN_STAGE_1_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Fender_12AX7_Clean) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_2_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::GE_12AU7_Jazz) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_3_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::RCA_12AY7_Vintage) /
+                                static_cast<float>(GainStageType::NumTypes));
+
+    // Low gain settings
+    processor.apvts.getParameter("GAIN1")->setValueNotifyingHost(0.2f); // ~3
+    processor.apvts.getParameter("GAIN2")->setValueNotifyingHost(0.15f); // ~2
+    processor.apvts.getParameter("GAIN3")->setValueNotifyingHost(0.15f); // ~2
+}
+
+void setPeavey5150(LZ25AudioProcessor& processor)
+{
+    // Brutal modern metal tone
+    processor.apvts.getParameter("GAIN_STAGE_1_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Peavey_5150_Lead) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_2_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Peavey_5150_Lead) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_3_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Engl_Savage_Modern) /
+                                static_cast<float>(GainStageType::NumTypes));
+
+    // Maximum gain
+    processor.apvts.getParameter("GAIN1")->setValueNotifyingHost(0.75f); // ~15
+    processor.apvts.getParameter("GAIN2")->setValueNotifyingHost(0.7f); // ~13
+    processor.apvts.getParameter("GAIN3")->setValueNotifyingHost(0.65f); // ~12
+}
+
+void setDumbleODS(LZ25AudioProcessor& processor)
+{
+    // Smooth boutique tone
+    processor.apvts.getParameter("GAIN_STAGE_1_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Dumble_ODS_Smooth) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_2_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Dumble_ODS_Smooth) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_3_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Bogner_Ecstasy_Warm) /
+                                static_cast<float>(GainStageType::NumTypes));
+
+    // Moderate gain for smooth overdrive
+    processor.apvts.getParameter("GAIN1")->setValueNotifyingHost(0.45f); // ~7
+    processor.apvts.getParameter("GAIN2")->setValueNotifyingHost(0.4f); // ~6
+    processor.apvts.getParameter("GAIN3")->setValueNotifyingHost(0.35f); // ~5
+}
+
+void setVoxAC30(LZ25AudioProcessor& processor)
+{
+    // British jangle and chime configuration
+    processor.apvts.getParameter("GAIN_STAGE_1_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Vox_EF86_Bright) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_2_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Mullard_ECC83_British) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_3_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::GE_12AU7_Jazz) /
+                                static_cast<float>(GainStageType::NumTypes));
+
+    // Moderate gain for classic British crunch
+    processor.apvts.getParameter("GAIN1")->setValueNotifyingHost(0.5f); // ~8
+    processor.apvts.getParameter("GAIN2")->setValueNotifyingHost(0.4f); // ~6
+    processor.apvts.getParameter("GAIN3")->setValueNotifyingHost(0.25f); // ~3.5
+}
+
+void setSoldanoCascade(LZ25AudioProcessor& processor)
+{
+    // High gain cascade configuration - all stages using Soldano SLO
+    processor.apvts.getParameter("GAIN_STAGE_1_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Soldano_SLO_Cascade) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_2_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Soldano_SLO_Cascade) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_3_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Soldano_SLO_Cascade) /
+                                static_cast<float>(GainStageType::NumTypes));
+
+    // High gain cascade settings
+    processor.apvts.getParameter("GAIN1")->setValueNotifyingHost(0.6f); // ~10
+    processor.apvts.getParameter("GAIN2")->setValueNotifyingHost(0.65f); // ~11
+    processor.apvts.getParameter("GAIN3")->setValueNotifyingHost(0.7f); // ~13
+}
+
+void setVintageJazzClean(LZ25AudioProcessor& processor)
+{
+    // Ultra-clean vintage jazz configuration
+    processor.apvts.getParameter("GAIN_STAGE_1_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::RCA_12AY7_Vintage) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_2_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::GE_12AU7_Jazz) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_3_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::RolandJC_FET_Clean) /
+                                static_cast<float>(GainStageType::NumTypes));
+
+    // Very low gain for pristine clean tones
+    processor.apvts.getParameter("GAIN1")->setValueNotifyingHost(0.1f); // ~1.5
+    processor.apvts.getParameter("GAIN2")->setValueNotifyingHost(0.12f); // ~1.8
+    processor.apvts.getParameter("GAIN3")->setValueNotifyingHost(0.15f); // ~2.2
+}
+
+void setModernMetalStack(LZ25AudioProcessor& processor)
+{
+    // Brutal modern metal configuration
+    processor.apvts.getParameter("GAIN_STAGE_1_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Engl_Savage_Modern) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_2_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Diezel_VH4_Tight) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_3_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Sunn_Transistor_Heavy) /
+                                static_cast<float>(GainStageType::NumTypes));
+
+    // Maximum gain for extreme metal
+    processor.apvts.getParameter("GAIN1")->setValueNotifyingHost(0.8f); // ~16
+    processor.apvts.getParameter("GAIN2")->setValueNotifyingHost(0.75f); // ~15
+    processor.apvts.getParameter("GAIN3")->setValueNotifyingHost(0.7f); // ~13
+}
+
+void setHybridWarmth(LZ25AudioProcessor& processor)
+{
+    // Creative hybrid configuration combining tube and solid-state warmth
+    processor.apvts.getParameter("GAIN_STAGE_1_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Hughes_Kettner_Tube_SS) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_2_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Bogner_Ecstasy_Warm) /
+                                static_cast<float>(GainStageType::NumTypes));
+    processor.apvts.getParameter("GAIN_STAGE_3_TYPE")
+        ->setValueNotifyingHost(static_cast<float>(GainStageType::Dumble_ODS_Smooth) /
+                                static_cast<float>(GainStageType::NumTypes));
+
+    // Mid-range gain for warm, musical overdrive
+    processor.apvts.getParameter("GAIN1")->setValueNotifyingHost(0.35f); // ~5
+    processor.apvts.getParameter("GAIN2")->setValueNotifyingHost(0.45f); // ~7
+    processor.apvts.getParameter("GAIN3")->setValueNotifyingHost(0.4f); // ~6
+}
+
+// ============================================================================
+// Process Block
+// ============================================================================
+
 void LZ25AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     (void) midiMessages;
@@ -854,6 +1060,29 @@ void LZ25AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
 
     for (auto i = inputChannels; i < outputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+
+    // Handle Amp Style Preset Changes
+    static int lastAmpStyle = -1;
+    int currentAmpStyle = static_cast<int>(*apvts.getRawParameterValue("AMP_STYLE"));
+    
+    if (currentAmpStyle != lastAmpStyle)
+    {
+        switch (currentAmpStyle)
+        {
+            case 0: setMarshallPlexi(*this); break;
+            case 1: setMesaDualRectifier(*this); break;
+            case 2: setFenderClean(*this); break;
+            case 3: setPeavey5150(*this); break;
+            case 4: setDumbleODS(*this); break;
+            case 5: setVoxAC30(*this); break;
+            case 6: setSoldanoCascade(*this); break;
+            case 7: setVintageJazzClean(*this); break;
+            case 8: setModernMetalStack(*this); break;
+            case 9: setHybridWarmth(*this); break;
+            default: break;
+        }
+        lastAmpStyle = currentAmpStyle;
+    }
 
     // Update main processor chain parameters on every block (Tone Stack, Resonance, Gain)
     auto& preGain = processorChain.get<preGainIndex>();

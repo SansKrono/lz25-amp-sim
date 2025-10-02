@@ -173,62 +173,24 @@ AmpPanel::AmpPanel (AudioProcessorValueTreeState& apvts)
     _labelBrightness.setColour (Label::textColourId, Colours::white);
 
 
-    // Gain Stage 1 Type combo box setup
-    addAndMakeVisible (_comboGainStage1Type);
-    _comboGainStage1Type.clear();
-    _comboGainStage1Type.addSectionHeading("Classic Tube Amps");
-    _comboGainStage1Type.addItem("Fender 12AX7 (Clean)", 1);
-    _comboGainStage1Type.addItem("Marshall ECC83 (Crunch)", 2);
-    _comboGainStage1Type.addItem("Mesa 12AX7 (High Gain)", 3);
-    _comboGainStage1Type.addItem("Vox EF86 (Bright)", 4);
-    _comboGainStage1Type.addSeparator();
-    _comboGainStage1Type.addSectionHeading("Modern High Gain");
-    _comboGainStage1Type.addItem("Peavey 5150 (Lead)", 8);
-    _comboGainStage1Type.addItem("ENGL Savage (Modern)", 9);
-    _comboGainStage1Type.addItem("Diezel VH4 (Tight)", 10);
-    _comboGainStage1Type.setTooltip ("Select amp emulation for Gain Stage 1.");
-    addAndMakeVisible (_labelGainStage1Type);
-    _labelGainStage1Type.setText ("STAGE 1 TYPE", dontSendNotification);
-    _labelGainStage1Type.setJustificationType (Justification::centred);
-    _labelGainStage1Type.setColour (Label::textColourId, Colours::white);
-
-    // Gain Stage 2 Type combo box setup
-    addAndMakeVisible (_comboGainStage2Type);
-    _comboGainStage2Type.clear();
-    _comboGainStage2Type.addSectionHeading("Classic Tube Amps");
-    _comboGainStage2Type.addItem("Fender 12AX7 (Clean)", 1);
-    _comboGainStage2Type.addItem("Marshall ECC83 (Crunch)", 2);
-    _comboGainStage2Type.addItem("Mesa 12AX7 (High Gain)", 3);
-    _comboGainStage2Type.addItem("Vox EF86 (Bright)", 4);
-    _comboGainStage2Type.addSeparator();
-    _comboGainStage2Type.addSectionHeading("Modern High Gain");
-    _comboGainStage2Type.addItem("Peavey 5150 (Lead)", 8);
-    _comboGainStage2Type.addItem("ENGL Savage (Modern)", 9);
-    _comboGainStage2Type.addItem("Diezel VH4 (Tight)", 10);
-    _comboGainStage2Type.setTooltip ("Select amp emulation for Gain Stage 2.");
-    addAndMakeVisible (_labelGainStage2Type);
-    _labelGainStage2Type.setText ("STAGE 2 TYPE", dontSendNotification);
-    _labelGainStage2Type.setJustificationType (Justification::centred);
-    _labelGainStage2Type.setColour (Label::textColourId, Colours::white);
-
-    // Gain Stage 3 Type combo box setup
-    addAndMakeVisible (_comboGainStage3Type);
-    _comboGainStage3Type.clear();
-    _comboGainStage3Type.addSectionHeading("Classic Tube Amps");
-    _comboGainStage3Type.addItem("Fender 12AX7 (Clean)", 1);
-    _comboGainStage3Type.addItem("Marshall ECC83 (Crunch)", 2);
-    _comboGainStage3Type.addItem("Mesa 12AX7 (High Gain)", 3);
-    _comboGainStage3Type.addItem("Vox EF86 (Bright)", 4);
-    _comboGainStage3Type.addSeparator();
-    _comboGainStage3Type.addSectionHeading("Modern High Gain");
-    _comboGainStage3Type.addItem("Peavey 5150 (Lead)", 8);
-    _comboGainStage3Type.addItem("ENGL Savage (Modern)", 9);
-    _comboGainStage3Type.addItem("Diezel VH4 (Tight)", 10);
-    _comboGainStage3Type.setTooltip ("Select amp emulation for Gain Stage 3.");
-    addAndMakeVisible (_labelGainStage3Type);
-    _labelGainStage3Type.setText ("STAGE 3 TYPE", dontSendNotification);
-    _labelGainStage3Type.setJustificationType (Justification::centred);
-    _labelGainStage3Type.setColour (Label::textColourId, Colours::white);
+    // Amp Style Preset combo box setup
+    addAndMakeVisible (_comboAmpStyle);
+    _comboAmpStyle.clear();
+    _comboAmpStyle.addItem("Marshall Plexi", 1);
+    _comboAmpStyle.addItem("Mesa Dual Rectifier", 2);
+    _comboAmpStyle.addItem("Fender Clean", 3);
+    _comboAmpStyle.addItem("Peavey 5150", 4);
+    _comboAmpStyle.addItem("Dumble ODS", 5);
+    _comboAmpStyle.addItem("Vox AC30", 6);
+    _comboAmpStyle.addItem("Soldano Cascade", 7);
+    _comboAmpStyle.addItem("Vintage Jazz Clean", 8);
+    _comboAmpStyle.addItem("Modern Metal Stack", 9);
+    _comboAmpStyle.addItem("Hybrid Warmth", 10);
+    _comboAmpStyle.setTooltip ("Select amp style preset that configures all three gain stages.");
+    addAndMakeVisible (_labelAmpStyle);
+    _labelAmpStyle.setText ("AMP STYLE", dontSendNotification);
+    _labelAmpStyle.setJustificationType (Justification::centred);
+    _labelAmpStyle.setColour (Label::textColourId, Colours::white);
 
     // Create parameter attachments
     _sliderAttachmentInput = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (
@@ -266,13 +228,9 @@ AmpPanel::AmpPanel (AudioProcessorValueTreeState& apvts)
     _toggleAttachmentBrightness = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (
         apvts, "BRIGHTNESS", _toggleBrightness);
         
-    // Gain Stage Type parameter attachments
-    _comboAttachmentGainStage1Type = std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment> (
-        apvts, "GAIN_STAGE_1_TYPE", _comboGainStage1Type);
-    _comboAttachmentGainStage2Type = std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment> (
-        apvts, "GAIN_STAGE_2_TYPE", _comboGainStage2Type);
-    _comboAttachmentGainStage3Type = std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment> (
-        apvts, "GAIN_STAGE_3_TYPE", _comboGainStage3Type);
+    // Amp Style parameter attachment
+    _comboAttachmentAmpStyle = std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment> (
+        apvts, "AMP_STYLE", _comboAmpStyle);
         
     // Set up double-click callbacks for gain stage bypass
     _sliderPreGain.onDoubleClickCallback = [this]() { onGain1DoubleClick(); };
@@ -432,19 +390,15 @@ void AmpPanel::resized()
     const int comboBoxHeight = 25;
     const int comboSpacing = 20;
     
-    // Gain Stage Type combo boxes
-    const int stageComboWidth = 200;
+    // Amp Style Preset combo box (centered where the three combo boxes used to be)
+    const int ampStyleComboWidth = 200;
     
-    _comboGainStage1Type.setBounds (x2, bottomRowY + 30, stageComboWidth, comboBoxHeight);
-    _labelGainStage1Type.setBounds (x2, bottomLabelsY, stageComboWidth, labelHeight);
-    x2 += stageComboWidth + comboSpacing;
+    // Center the single combo box in the space previously occupied by the three combo boxes
+    const int totalPreviousWidth = 200 * 3 + comboSpacing * 2; // 3 combos + 2 spacings
+    const int centerOffset = (totalPreviousWidth - ampStyleComboWidth) / 2;
     
-    _comboGainStage2Type.setBounds (x2, bottomRowY + 30, stageComboWidth, comboBoxHeight);
-    _labelGainStage2Type.setBounds (x2, bottomLabelsY, stageComboWidth, labelHeight);
-    x2 += stageComboWidth + comboSpacing;
-    
-    _comboGainStage3Type.setBounds (x2, bottomRowY + 30, stageComboWidth, comboBoxHeight);
-    _labelGainStage3Type.setBounds (x2, bottomLabelsY, stageComboWidth, labelHeight);
+    _comboAmpStyle.setBounds (x2 + centerOffset, bottomRowY + 30, ampStyleComboWidth, comboBoxHeight);
+    _labelAmpStyle.setBounds (x2 + centerOffset, bottomLabelsY, ampStyleComboWidth, labelHeight);
 }
 
 //==============================================================================
