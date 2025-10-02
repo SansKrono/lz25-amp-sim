@@ -176,16 +176,33 @@ AmpPanel::AmpPanel (AudioProcessorValueTreeState& apvts)
     // Amp Style Preset combo box setup
     addAndMakeVisible (_comboAmpStyle);
     _comboAmpStyle.clear();
-    _comboAmpStyle.addItem("Marshall Plexi", 1);
-    _comboAmpStyle.addItem("Mesa Dual Rectifier", 2);
-    _comboAmpStyle.addItem("Fender Clean", 3);
-    _comboAmpStyle.addItem("Peavey 5150", 4);
-    _comboAmpStyle.addItem("Dumble ODS", 5);
-    _comboAmpStyle.addItem("Vox AC30", 6);
-    _comboAmpStyle.addItem("Soldano Cascade", 7);
-    _comboAmpStyle.addItem("Vintage Jazz Clean", 8);
-    _comboAmpStyle.addItem("Modern Metal Stack", 9);
-    _comboAmpStyle.addItem("Hybrid Warmth", 10);
+    _comboAmpStyle.addItem("Brit Crunch Classic", 1);
+    _comboAmpStyle.addItem("Tight Modern Stack", 2);
+    _comboAmpStyle.addItem("Clean Vintage Glass", 3);
+    _comboAmpStyle.addItem("Brutal Lead Stack", 4);
+    _comboAmpStyle.addItem("Smooth Boutique Drive", 5);
+    _comboAmpStyle.addItem("Chimey Brit Jangle", 6);
+    _comboAmpStyle.addItem("Hot Cascade Lead", 7);
+    _comboAmpStyle.addItem("Vintage Glass Clean", 8);
+    _comboAmpStyle.addItem("Teutonic Metal Stack", 9);
+    _comboAmpStyle.addItem("Hybrid Tube/SS Warmth", 10);
+    // Pure single-type gain-stage presets (match PluginProcessor AMP_STYLE order)
+    _comboAmpStyle.addItem("Pure: Fender 12AX7 Clean", 11);
+    _comboAmpStyle.addItem("Pure: Marshall ECC83 Crunch", 12);
+    _comboAmpStyle.addItem("Pure: Mesa 12AX7 HighGain", 13);
+    _comboAmpStyle.addItem("Pure: Vox EF86 Bright", 14);
+    _comboAmpStyle.addItem("Pure: RCA 12AY7 Vintage", 15);
+    _comboAmpStyle.addItem("Pure: GE 12AU7 Jazz", 16);
+    _comboAmpStyle.addItem("Pure: Mullard ECC83 British", 17);
+    _comboAmpStyle.addItem("Pure: Peavey 5150 Lead", 18);
+    _comboAmpStyle.addItem("Pure: ENGL Savage Modern", 19);
+    _comboAmpStyle.addItem("Pure: Diezel VH4 Tight", 20);
+    _comboAmpStyle.addItem("Pure: Dumble ODS Smooth", 21);
+    _comboAmpStyle.addItem("Pure: Soldano SLO Cascade", 22);
+    _comboAmpStyle.addItem("Pure: Bogner Ecstasy Warm", 23);
+    _comboAmpStyle.addItem("Pure: RolandJC FET Clean", 24);
+    _comboAmpStyle.addItem("Pure: Sunn Transistor Heavy", 25);
+    _comboAmpStyle.addItem("Pure: Hughes&Kettner Tube/SS", 26);
     _comboAmpStyle.setTooltip ("Select amp style preset that configures all three gain stages.");
     addAndMakeVisible (_labelAmpStyle);
     _labelAmpStyle.setText ("AMP STYLE", dontSendNotification);
@@ -378,7 +395,7 @@ void AmpPanel::resized()
     _labelPresence.setBounds (x, topLabelsY, sliderWidth, labelHeight);
     x += sliderWidth + row1Spacing;
 
-    _toggleBrightness.setBounds (x, topRowY, sliderWidth, sliderHeight);
+    _toggleBrightness.setBounds (x + 15, topRowY, sliderWidth, sliderHeight);
     _labelBrightness.setBounds (x, topLabelsY, sliderWidth, labelHeight);
     x += sliderWidth + row1Spacing;
 
