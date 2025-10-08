@@ -24,6 +24,7 @@ Testing
 
 # IDE config
 .idea
+.junie
 .vs
 
 # clion cmake builds
