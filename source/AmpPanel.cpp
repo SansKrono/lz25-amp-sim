@@ -172,6 +172,18 @@ AmpPanel::AmpPanel (AudioProcessorValueTreeState& apvts)
     _labelBrightness.setJustificationType (Justification::centred);
     _labelBrightness.setColour (Label::textColourId, Colours::white);
 
+    // Tone Stack Position combo box setup
+    addAndMakeVisible (_comboToneStackPosition);
+    _comboToneStackPosition.addItem (toString(ToneStackPosition::PreGain), 1);
+    _comboToneStackPosition.addItem (toString(ToneStackPosition::MidGain), 2);
+    _comboToneStackPosition.addItem (toString(ToneStackPosition::PostGain), 3);
+    _comboToneStackPosition.setSelectedId (1);
+
+    _comboToneStackPosition.setTooltip ("Tone stack position. Pre-gain is default, Mid-gain sits the stack after the first gain stage, Post-gain puts the tone stack after all gain stages.");
+    addAndMakeVisible (_labelToneStackPosition);
+    _labelToneStackPosition.setText ("TONE STACK POSITION", dontSendNotification);
+    _labelToneStackPosition.setJustificationType (Justification::centred);
+    _labelToneStackPosition.setColour (Label::textColourId, Colours::white);
 
     // Amp Style Preset combo box setup
     addAndMakeVisible (_comboAmpStyle);
@@ -248,11 +260,14 @@ AmpPanel::AmpPanel (AudioProcessorValueTreeState& apvts)
     // Amp Style parameter attachment
     _comboAttachmentAmpStyle = std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment> (
         apvts, "AMP_STYLE", _comboAmpStyle);
+
+    _comboAttachmentToneStackPosition = std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment> (
+        apvts, "TONE_STACK_POSITION", _comboToneStackPosition);
         
     // Set up double-click callbacks for gain stage bypass
-    _sliderPreGain.onDoubleClickCallback = [this]() { onGain1DoubleClick(); };
-    _sliderGain2.onDoubleClickCallback = [this]() { onGain2DoubleClick(); };
-    _sliderGain3.onDoubleClickCallback = [this]() { onGain3DoubleClick(); };
+    _labelPreGain.onDoubleClickCallback = [this]() { onGain1DoubleClick(); };
+    _labelGain2.onDoubleClickCallback = [this]() { onGain2DoubleClick(); };
+    _labelGain3.onDoubleClickCallback = [this]() { onGain3DoubleClick(); };
 }
 
 AmpPanel::~AmpPanel() = default;
@@ -357,8 +372,6 @@ void AmpPanel::resized()
 
     const int topRowY = row1.getY();
     const int topLabelsY = topRowY + sliderHeight + labelGap;
-    const int bottomRowY = row2.getY();
-    const int bottomLabelsY = bottomRowY + row2SliderHeight + labelGap;
 
     int x = row1.getX() + row1Spacing;
 
@@ -403,19 +416,29 @@ void AmpPanel::resized()
     _labelPostGain.setBounds (x, topLabelsY, sliderWidth, labelHeight);
 
     // Row 2 - Gain Stage Type dropdowns
+    // Row 2 - Gain Stage Type dropdowns
     int x2 = row2.getX() + row2Spacing;
+    const int bottomRowOffset = 35;
+    const int bottomRowLabelOffset = bottomRowOffset + 10;
+    const int bottomRowY = row2.getY() + bottomRowOffset;
+    const int bottomLabelsY = bottomRowY + row2SliderHeight + labelGap - bottomRowLabelOffset;
     const int comboBoxHeight = 25;
     const int comboSpacing = 20;
-    
-    // Amp Style Preset combo box (centered where the three combo boxes used to be)
+
+    // Amp Style Preset combo box dimensions
     const int ampStyleComboWidth = 200;
-    
-    // Center the single combo box in the space previously occupied by the three combo boxes
-    const int totalPreviousWidth = 200 * 3 + comboSpacing * 2; // 3 combos + 2 spacings
-    const int centerOffset = (totalPreviousWidth - ampStyleComboWidth) / 2;
-    
-    _comboAmpStyle.setBounds (x2 + centerOffset, bottomRowY + 30, ampStyleComboWidth, comboBoxHeight);
+
+    // Calculate total width needed for both combo boxes and spacing
+    const int totalComboWidth = (ampStyleComboWidth * 2) + comboSpacing;
+
+    // Center the combo boxes within the available row2 width
+    const int availableWidth = row2.getWidth() - (row2Spacing * 2);
+    const int centerOffset = (availableWidth - totalComboWidth) / 2 - (comboSpacing / 2);
+
+    _comboAmpStyle.setBounds (x2 + centerOffset, bottomRowY, ampStyleComboWidth, comboBoxHeight);
     _labelAmpStyle.setBounds (x2 + centerOffset, bottomLabelsY, ampStyleComboWidth, labelHeight);
+    _comboToneStackPosition.setBounds (x2 + centerOffset + ampStyleComboWidth + comboSpacing, bottomRowY, ampStyleComboWidth, comboBoxHeight);
+    _labelToneStackPosition.setBounds (x2 + centerOffset + ampStyleComboWidth + comboSpacing, bottomLabelsY, ampStyleComboWidth, labelHeight);
 }
 
 //==============================================================================

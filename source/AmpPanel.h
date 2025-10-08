@@ -21,6 +21,24 @@ public:
     }
 };
 
+// Custom label class for double-click detection
+class DoubleClickLabel : public juce::Label
+{
+public:
+    DoubleClickLabel() = default;
+
+    std::function<void()> onDoubleClickCallback;
+
+    void mouseDoubleClick(const juce::MouseEvent& event) override
+    {
+        if (onDoubleClickCallback)
+            onDoubleClickCallback();
+
+        // Call parent implementation to maintain normal double-click behavior (reset to default)
+        juce::Label::mouseDoubleClick(event);
+    }
+};
+
 class AmpPanel : public juce::Component
 {
 public:
@@ -48,7 +66,7 @@ private:
     juce::Label _labelInput;
     
     DoubleClickSlider _sliderPreGain;
-    juce::Label _labelPreGain;
+    DoubleClickLabel _labelPreGain;
     
     juce::Slider _sliderResonance;
     juce::Label _labelResonance;
@@ -87,14 +105,16 @@ private:
 
     // New Tube Amp Parameters
     DoubleClickSlider _sliderGain2;
-    juce::Label _labelGain2;
+    DoubleClickLabel _labelGain2;
     
     DoubleClickSlider _sliderGain3;
-    juce::Label _labelGain3;
+    DoubleClickLabel _labelGain3;
     
     juce::ToggleButton _toggleBrightness;
     juce::Label _labelBrightness;
-    
+
+    juce::ComboBox _comboToneStackPosition;
+    juce::Label _labelToneStackPosition;
     
     // Amp Style Preset Selector
     juce::ComboBox _comboAmpStyle;
@@ -122,6 +142,7 @@ private:
     
     // Amp Style parameter attachment
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> _comboAttachmentAmpStyle;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> _comboAttachmentToneStackPosition;
 
     // Look and feel
     MXRLookAndFeel _sliderLookAndFeel;

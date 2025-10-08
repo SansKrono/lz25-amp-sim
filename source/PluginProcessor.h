@@ -1,11 +1,11 @@
 #pragma once
+#include <chowdsp_filters/chowdsp_filters.h>
 #include "effects/BigCheeseFuzz.h"
 #include "effects/MxrDynaComp.h"
 #include "effects/Pitch.h"
 #include "effects/SmartGate.h"
 #include "effects/TransientShaper.h"
 #include "effects/TubeScreamer808.h"
-#include <chowdsp_filters/chowdsp_filters.h>
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_devices/juce_audio_devices.h>
 #include <juce_audio_formats/juce_audio_formats.h>
@@ -20,69 +20,117 @@
 #include <juce_gui_extra/juce_gui_extra.h>
 
 //==============================================================================
+// Enums
+enum class ToneStackPosition {
+    PreGain = 0, // Before gain stages (Mesa Mark style)
+    MidGain, // Between gain stages (Fender/Marshall style)
+    PostGain, // After gain stages (High-gain style)
+    NumTypes
+};
+
+inline const char* toString (ToneStackPosition pos)
+{
+    switch (pos)
+    {
+        case ToneStackPosition::PreGain:
+            return "Pre-Gain (Mesa)";
+        case ToneStackPosition::MidGain:
+            return "Mid-Gain (Classic)";
+        case ToneStackPosition::PostGain:
+            return "Post-Gain (Modern)";
+        default:
+            return "Unknown";
+    }
+}
+
+inline const char* getDescription (ToneStackPosition pos)
+{
+    switch (pos)
+    {
+        case ToneStackPosition::PreGain:
+            return "Tone stack before distortion. Tight, focused tone.";
+        case ToneStackPosition::MidGain:
+            return "Tone stack between stages. Balanced, musical.";
+        case ToneStackPosition::PostGain:
+            return "Tone stack after distortion. Aggressive, modern.";
+        default:
+            return "";
+    }
+}
+
+//==============================================================================
 // Gain Stage Types Enum
 enum class GainStageType {
-    // Classic Tube Amp Emulations
+
+    // Classic Tube Amp Emulations ---------------------------------------------
     Fender_12AX7_Clean = 0, // Fender Bassman/Twin - Clean & articulate
     Marshall_ECC83_Crunch, // Marshall JCM800 - British crunch
     Mesa_12AX7_HighGain, // Mesa Boogie - Modern high gain
     Vox_EF86_Bright, // Vox AC30 - Bright & chimey
 
-    // Vintage Tube Types
+    // Vintage Tube Types ------------------------------------------------------
     RCA_12AY7_Vintage, // Lower gain vintage warmth
     GE_12AU7_Jazz, // Jazz/clean headroom
     Mullard_ECC83_British, // Classic British tone
 
-    // Modern High Gain
+    // Modern High Gain --------------------------------------------------------
     Peavey_5150_Lead, // Peavey 5150/6505 - Brutal gain
     Engl_Savage_Modern, // ENGL Savage - German precision
     Diezel_VH4_Tight, // Diezel VH4 - Ultra tight
 
-    // Boutique/Specialty
+    // Boutique/Specialty ------------------------------------------------------
     Dumble_ODS_Smooth, // Dumble Overdrive Special - Smooth saturation
     Soldano_SLO_Cascade, // Soldano SLO-100 - Cascading gain
     Bogner_Ecstasy_Warm, // Bogner Ecstasy - Warm & musical
 
-    // Solid State Emulations
+    // Solid State Emulations --------------------------------------------------
     RolandJC_FET_Clean, // Roland Jazz Chorus FET - Ultra clean
     Sunn_Transistor_Heavy, // Sunn Model T - Heavy transistor
 
-    // Hybrid
+    // Hybrid ------------------------------------------------------------------
     Hughes_Kettner_Tube_SS, // H&K TriAmp - Hybrid character
 
     NumTypes
 };
 
-/**
- * @enum ToneStackPosition
- * @brief Defines the position of the tone stack within the signal chain.
- *
- * The tone stack position determines where the tone shaping circuitry is placed
- * relative to the gain stages in an audio signal processor.
- *
- * Available positions:
- * - PreGain: Tone stack placed before the gain stage, similar to Mesa style.
- * - MidGain: Tone stack placed in the middle or between gain stages, akin to Fender/Marshall style.
- * - PostGain: Tone stack placed after all gain stages, used in high-gain styles.
- */
-enum class ToneStackPosition {
-    PreGain = 0, // Mesa style
-    MidGain = 1, // Fender/Marshall style
-    PostGain = 2 // High-gain style
-};
-
-static constexpr const char* toString (ToneStackPosition pos)
+inline const char* toString (GainStageType type)
 {
-    switch (pos)
+    switch (type)
     {
-        case ToneStackPosition::PreGain:
-            return "Pre Gain";
-        case ToneStackPosition::MidGain:
-            return "Mid Gain";
-        case ToneStackPosition::PostGain:
-            return "Post Gain";
+        case GainStageType::Fender_12AX7_Clean:
+            return "Fender 12AX7 Clean";
+        case GainStageType::Marshall_ECC83_Crunch:
+            return "Marshall ECC83 Crunch";
+        case GainStageType::Mesa_12AX7_HighGain:
+            return "Mesa 12AX7 High Gain";
+        case GainStageType::Vox_EF86_Bright:
+            return "Vox EF86 Bright";
+        case GainStageType::RCA_12AY7_Vintage:
+            return "RCA 12AY7 Vintage";
+        case GainStageType::GE_12AU7_Jazz:
+            return "GE 12AU7 Jazz";
+        case GainStageType::Mullard_ECC83_British:
+            return "Mullard ECC83 British";
+        case GainStageType::Peavey_5150_Lead:
+            return "Peavey 5150 Lead";
+        case GainStageType::Engl_Savage_Modern:
+            return "ENGL Savage Modern";
+        case GainStageType::Diezel_VH4_Tight:
+            return "Diezel VH4 Tight";
+        case GainStageType::Dumble_ODS_Smooth:
+            return "Dumble ODS Smooth";
+        case GainStageType::Soldano_SLO_Cascade:
+            return "Soldano SLO Cascade";
+        case GainStageType::Bogner_Ecstasy_Warm:
+            return "Bogner Ecstasy Warm";
+        case GainStageType::RolandJC_FET_Clean:
+            return "Roland JC FET Clean";
+        case GainStageType::Sunn_Transistor_Heavy:
+            return "Sunn Transistor Heavy";
+        case GainStageType::Hughes_Kettner_Tube_SS:
+            return "Hughes & Kettner Hybrid";
         default:
-            return "Unknown";
+            return nullptr;
     }
 }
 
@@ -547,7 +595,13 @@ private:
         const float midResistance = midPot * midCutNorm + 10.0f;
         float midCutoff = 1.0f / (juce::MathConstants<float>::twoPi * midResistance * midCap);
         midCutoff = juce::jlimit (318.0f, 20000.0f, midCutoff);
-        midFilter.coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass (fs, midCutoff);
+        // Mid cut up to -12dB
+        float midGainCut = juce::Decibels::decibelsToGain (juce::jlimit (-12.0f, 0.0f, -mid));
+        midFilter.coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter (
+            fs,
+            midCutoff,
+            4.0f,
+            midGainCut);
 
         // Low-pass (slope resistor + cap) around ~80 Hz
         const float lpCutoff = 1.0f / (juce::MathConstants<float>::twoPi * slopeRes * midCap);
@@ -557,17 +611,29 @@ private:
         if (treble > 0.0f)
         {
             const float trebleGainDb = treble * 12.0f; // up to +12 dB
-            trebleBoostFilter.coefficients = juce::dsp::IIR::Coefficients<float>::makeHighShelf (fs, 2000.0f, 0.707f, juce::Decibels::decibelsToGain (trebleGainDb));
+            trebleBoostFilter.coefficients = juce::dsp::IIR::Coefficients<float>::makeHighShelf (
+                fs,
+                4000.0f,
+                0.707f,
+                juce::Decibels::decibelsToGain (trebleGainDb));
         }
         if (mid > 0.0f)
         {
             const float midGainDb = mid * 12.0f; // up to +12 dB
-            midBoostFilter.coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter (fs, 500.0f, 1.0f, juce::Decibels::decibelsToGain (midGainDb));
+            midBoostFilter.coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter (
+                fs,
+                midCutoff,
+                2.0f,
+                juce::Decibels::decibelsToGain (midGainDb));
         }
         if (bass > 0.0f)
         {
             const float bassGainDb = bass * 12.0f; // up to +12 dB
-            bassBoostFilter.coefficients = juce::dsp::IIR::Coefficients<float>::makeLowShelf (fs, 100.0f, 0.707f, juce::Decibels::decibelsToGain (bassGainDb));
+            bassBoostFilter.coefficients = juce::dsp::IIR::Coefficients<float>::makeLowShelf (
+                fs,
+                100.0f,
+                0.707f,
+                juce::Decibels::decibelsToGain (bassGainDb));
         }
     }
 
@@ -617,15 +683,30 @@ public:
     }
 
     // Presence value expected in range [-1, 1]
-    void setPresence (float value)
+    void setPresence (float mappedP, double sampleRate)
     {
-        value = juce::jlimit (-1.0f, 1.0f, value);
-        if (std::abs (presence - value) > 1.0e-6f)
-        {
-            presence = value;
-            presenceSmooth.setTargetValue (value);
-            updateFilters();
-        }
+        mappedP = juce::jlimit (-1.0f, 1.0f, mappedP);
+
+        // Safe mapping
+        const float freq = juce::jmap (mappedP, -1.0f, 1.0f, 500.0f, 8000.0f);
+        const float q = juce::jmap (mappedP, -1.0f, 1.0f, 0.5f, 1.5f);
+
+        // Use reset() to load new coeffs (safer than direct .state assignment)
+        feedbackLPF.coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass (
+            static_cast<float> (sampleRate),
+            juce::jlimit (20.0f, static_cast<float> (sampleRate) * 0.45f, freq),
+            q);
+
+        feedbackHPF.coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass (
+            static_cast<float> (sampleRate),
+            juce::jlimit (20.0f, static_cast<float> (sampleRate) * 0.45f, freq * 0.5f),
+            0.707f);
+
+        outputShelf.coefficients = juce::dsp::IIR::Coefficients<float>::makeHighShelf (
+            sampleRate,
+            2000.0f,
+            0.7f,
+            1.0f + mappedP * 0.5f);
     }
 
     float processSample (float input)
@@ -703,6 +784,7 @@ public:
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
 #endif
 
+    void processToneStack();
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
     //==============================================================================
